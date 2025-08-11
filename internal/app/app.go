@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -27,4 +28,13 @@ func New(ctx context.Context, addr string, db Database, router *chi.Mux) App {
 	}
 
 	return app
+}
+
+func (app *App) Run() error {
+	// setup db connection here
+	// setup router here
+
+	http.ListenAndServe(app.addr, app.router)
+
+	return nil
 }
