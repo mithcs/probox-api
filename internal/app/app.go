@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mithcs/probox-api/internal/tokens"
 )
 
 type Database struct {
@@ -44,4 +45,6 @@ func registerRoutes(router *chi.Mux) {
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	})
+
+	tokens.SetupTokens(router)
 }
