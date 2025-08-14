@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/mithcs/probox-api/internal/tokens"
+	"github.com/mithcs/probox-api/internal/users"
 )
 
 type Database struct {
@@ -47,4 +48,5 @@ func registerRoutes(router *chi.Mux) {
 	})
 
 	tokens.SetupTokens(router)
+	users.SetupUsers(router)
 }
