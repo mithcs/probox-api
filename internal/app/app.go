@@ -32,9 +32,16 @@ func New(ctx context.Context, addr string, db Database, router *chi.Mux) App {
 
 func (app *App) Run() error {
 	// setup db connection here
-	// setup router here
+
+	registerRoutes(app.router)
 
 	http.ListenAndServe(app.addr, app.router)
 
 	return nil
+}
+
+func registerRoutes(router *chi.Mux) {
+	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("OK"))
+	})
 }
