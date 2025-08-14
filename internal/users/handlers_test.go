@@ -1,9 +1,11 @@
 package users
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -24,9 +26,18 @@ func TestCreateUser(t *testing.T) {
 		t.Errorf("got err %v, expected nil", err)
 	}
 
-	wantBody := "create new user and generate access/refresh tokens"
+	var userRes NewUserResponse
+	err = json.Unmarshal(gotBody, &userRes)
+	if err != nil {
+		t.Errorf("got err %v, expected nil", err)
+	}
 
-	if string(gotBody) != wantBody {
-		t.Errorf("got %q, expected %q", gotBody, wantBody)
+	// checks only `{ "alg":` part to verify whether its JWT
+	if !strings.HasPrefix(userRes.AccessToken, "eyJhbGciOi") {
+		t.Error("invalid access token")
+	}
+
+	if !strings.HasPrefix(userRes.RefreshToken, "eyJhbGciOi") {
+		t.Error("invalid refresh token")
 	}
 }
