@@ -24,7 +24,7 @@ func TestCreateTokens(t *testing.T) {
 		t.Errorf("got err %v, expected nil", err)
 	}
 
-	wantBody := "create new pair of access and refresh tokens from username/password"
+	wantBody := "generate new pair of access and refresh tokens from refresh token"
 
 	if string(gotBody) != wantBody {
 		t.Errorf("got %q, expected %q", gotBody, wantBody)
@@ -48,7 +48,7 @@ func TestRefreshTokens(t *testing.T) {
 		t.Errorf("got err %v, expected nil", err)
 	}
 
-	wantBody := "create new pair of access and refresh tokens from refresh token"
+	wantBody := "generate new access token using refresh token"
 	if string(gotBody) != wantBody {
 		t.Errorf("got %q, expected %q", gotBody, wantBody)
 	}
