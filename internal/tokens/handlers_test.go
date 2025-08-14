@@ -12,27 +12,23 @@ func TestCreateTokens(t *testing.T) {
 	res := httptest.NewRecorder()
 	CreateTokens(res, req)
 
-	t.Run("test status code", func(t *testing.T) {
-		got := res.Code
-		want := http.StatusOK
+	gotCode := res.Code
+	wantCode := http.StatusOK
 
-		if got != want {
-			t.Errorf("got status code %d, expected %d", got, want)
-		}
-	})
+	if gotCode != wantCode {
+		t.Errorf("got status code %d, expected %d", gotCode, wantCode)
+	}
 
-	t.Run("test body", func(t *testing.T) {
-		got, err := io.ReadAll(res.Body)
-		if err != nil {
-			t.Errorf("expected err to be nil, got %v", err)
-		}
+	gotBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Errorf("got err %v, expected nil", err)
+	}
 
-		want := "create new pair of access and refresh tokens from username/password"
+	wantBody := "create new pair of access and refresh tokens from username/password"
 
-		if string(got) != want {
-			t.Errorf("got %q, expected %q", got, want)
-		}
-	})
+	if string(gotBody) != wantBody {
+		t.Errorf("got %q, expected %q", gotBody, wantBody)
+	}
 }
 
 func TestRefreshTokens(t *testing.T) {
@@ -40,25 +36,20 @@ func TestRefreshTokens(t *testing.T) {
 	res := httptest.NewRecorder()
 	RefreshTokens(res, req)
 
-	t.Run("test status code", func(t *testing.T) {
-		got := res.Code
-		want := http.StatusOK
+	gotCode := res.Code
+	wantCode := http.StatusOK
 
-		if got != want {
-			t.Errorf("got status code %d, expected %d", got, want)
-		}
-	})
+	if gotCode != wantCode {
+		t.Errorf("got status code %d, expected %d", gotCode, wantCode)
+	}
 
-	t.Run("test body", func(t *testing.T) {
-		got, err := io.ReadAll(res.Body)
-		if err != nil {
-			t.Errorf("expected err to be nil, got %v", err)
-		}
+	gotBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Errorf("got err %v, expected nil", err)
+	}
 
-		want := "create new pair of access and refresh tokens from refresh token"
-
-		if string(got) != want {
-			t.Errorf("got %q, expected %q", got, want)
-		}
-	})
+	wantBody := "create new pair of access and refresh tokens from refresh token"
+	if string(gotBody) != wantBody {
+		t.Errorf("got %q, expected %q", gotBody, wantBody)
+	}
 }
