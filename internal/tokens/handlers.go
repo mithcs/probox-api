@@ -1,9 +1,40 @@
 package tokens
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/mithcs/probox-api/internal/globals"
+)
+
+type CreateTokensResponse struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+}
 
 func CreateTokens(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("generate new pair of access and refresh tokens from refresh token"))
+	// get username and password from request body
+	// verify username and password
+	userId := 1
+
+	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	tokens := CreateTokensResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+
+	response, err := json.Marshal(tokens)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(response)
 }
 
 func RefreshTokens(w http.ResponseWriter, r *http.Request) {

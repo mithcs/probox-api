@@ -1,9 +1,11 @@
 package tokens
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -24,10 +26,19 @@ func TestCreateTokens(t *testing.T) {
 		t.Errorf("got err %v, expected nil", err)
 	}
 
-	wantBody := "generate new pair of access and refresh tokens from refresh token"
+	var tokens CreateTokensResponse
+	err = json.Unmarshal(gotBody, &tokens)
+	if err != nil {
+		t.Errorf("got err %v, expected nil", err)
+	}
 
-	if string(gotBody) != wantBody {
-		t.Errorf("got %q, expected %q", gotBody, wantBody)
+	// checks only `{ "alg":` part to verify whether its JWT
+	if !strings.HasPrefix(tokens.AccessToken, "eyJhbGciOi") {
+		t.Error("invalid access token")
+	}
+
+	if !strings.HasPrefix(tokens.RefreshToken, "eyJhbGciOi") {
+		t.Error("invalid refresh token")
 	}
 }
 
