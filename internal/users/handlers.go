@@ -18,7 +18,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	// store username and hash of password
 	userId := 1
 
-	accessToken, refreshToken, err := generateAccessAndRefreshTokens(userId)
+	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -36,17 +36,4 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(response)
-}
-
-func generateAccessAndRefreshTokens(userId int) (string, string, error) {
-	accessToken, err := globals.GenerateAccessToken(userId)
-	if err != nil {
-		return "", "", err
-	}
-	refreshToken, err := globals.GenerateRefreshToken(userId)
-	if err != nil {
-		return "", "", err
-	}
-
-	return accessToken, refreshToken, err
 }
