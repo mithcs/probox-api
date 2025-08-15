@@ -12,6 +12,11 @@ type CreateTokensResponse struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+type RefreshTokensResponse struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+}
+
 func CreateTokens(w http.ResponseWriter, r *http.Request) {
 	// get username and password from request body
 	// verify username and password
@@ -38,5 +43,26 @@ func CreateTokens(w http.ResponseWriter, r *http.Request) {
 }
 
 func RefreshTokens(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("generate new access token using refresh token"))
+	// get refresh token from body
+	// verify refresh token
+	userId := 1
+
+	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	tokens := RefreshTokensResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+
+	response, err := json.Marshal(tokens)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(response)
 }

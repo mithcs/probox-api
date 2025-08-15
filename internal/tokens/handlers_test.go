@@ -59,8 +59,18 @@ func TestRefreshTokens(t *testing.T) {
 		t.Errorf("got err %v, expected nil", err)
 	}
 
-	wantBody := "generate new access token using refresh token"
-	if string(gotBody) != wantBody {
-		t.Errorf("got %q, expected %q", gotBody, wantBody)
+	var rTokenRes RefreshTokensResponse
+	err = json.Unmarshal(gotBody, &rTokenRes)
+	if err != nil {
+		t.Errorf("got err %v, expected nil", err)
+	}
+
+	// checks only `{ "alg":` part to verify whether its JWT
+	if !strings.HasPrefix(rTokenRes.AccessToken, "eyJhbGciOi") {
+		t.Error("invalid access token")
+	}
+
+	if !strings.HasPrefix(rTokenRes.RefreshToken, "eyJhbGciOi") {
+		t.Error("invalid refresh token")
 	}
 }
