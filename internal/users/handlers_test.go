@@ -26,7 +26,7 @@ func TestCreateUser(t *testing.T) {
 		t.Errorf("got err %v, expected nil", err)
 	}
 
-	var userRes NewUserResponse
+	var userRes CreateUserResponse
 	err = json.Unmarshal(gotBody, &userRes)
 	if err != nil {
 		t.Errorf("got err %v, expected nil", err)

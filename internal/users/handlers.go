@@ -7,7 +7,7 @@ import (
 	"github.com/mithcs/probox-api/internal/globals"
 )
 
-type NewUserResponse struct {
+type CreateUserResponse struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 }
@@ -24,7 +24,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokens := NewUserResponse{
+	tokens := CreateUserResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}
