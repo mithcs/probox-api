@@ -50,3 +50,16 @@ func GenerateRefreshToken(userId int) (string, error) {
 
 	return refreshToken, nil
 }
+
+func GenerateAccessAndRefreshTokens(userId int) (string, string, error) {
+	accessToken, err := GenerateAccessToken(userId)
+	if err != nil {
+		return "", "", err
+	}
+	refreshToken, err := GenerateRefreshToken(userId)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, err
+}
