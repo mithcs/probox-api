@@ -1,6 +1,7 @@
 package tokens
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/mithcs/probox-api/internal/globals"
 	"github.com/mithcs/probox-api/internal/users"
 )
@@ -99,37 +101,48 @@ func TestCreateTokens(t *testing.T) {
 	})
 }
 
+// actually, the verification of tokens takes place at router level (via middleware)
 func TestRefreshTokens(t *testing.T) {
-	req := httptest.NewRequest(http.MethodPut, "/tokens", nil)
-	res := httptest.NewRecorder()
-	RefreshTokens(res, req)
+	t.Run("valid refresh token", func(t *testing.T) {
+		userId := 1
 
-	gotCode := res.Code
-	wantCode := http.StatusOK
+		jwtString, err := globals.GenerateRefreshToken(userId)
+		if err != nil {
+			t.Errorf("got err %v, expected nil", err)
+		}
+		jwt, err := globals.RefreshTokenAuth.Decode(jwtString)
+		if err != nil {
+			t.Errorf("got err %v, expected nil", err)
+		}
 
-	if gotCode != wantCode {
-		t.Errorf("got status code %d, expected %d", gotCode, wantCode)
-	}
+		ctx := context.WithValue(t.Context(), jwtauth.TokenCtxKey, jwt)
+		ctx = context.WithValue(ctx, jwtauth.ErrorCtxKey, nil)
 
-	gotBody, err := io.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("got err %v, expected nil", err)
-	}
+		req := httptest.NewRequestWithContext(ctx, http.MethodPut, "/tokens", nil)
+		res := httptest.NewRecorder()
+		RefreshTokens(res, req)
 
-	var rTokenRes RefreshTokensResponse
-	err = json.Unmarshal(gotBody, &rTokenRes)
-	if err != nil {
-		t.Errorf("got err %v, expected nil", err)
-	}
+		gotCode := res.Code
+		wantCode := http.StatusOK
 
-	// checks only `{ "alg":` part to verify whether its JWT
-	if !strings.HasPrefix(rTokenRes.AccessToken, "eyJhbGciOi") {
-		t.Error("invalid access token")
-	}
+		if gotCode != wantCode {
+			t.Errorf("got status code %d, expected %d", gotCode, wantCode)
+		}
 
-	if !strings.HasPrefix(rTokenRes.RefreshToken, "eyJhbGciOi") {
-		t.Error("invalid refresh token")
-	}
+		resBody, err := io.ReadAll(res.Body)
+		if err != nil {
+			t.Errorf("got err %v, expected nil", err)
+		}
+
+		var rTokenRes RefreshTokensResponse
+		err = json.Unmarshal(resBody, &rTokenRes)
+		if err != nil {
+			t.Errorf("got err %v, expected nil", err)
+		}
+
+		assertJWT(t, rTokenRes.AccessToken, "access token")
+		assertJWT(t, rTokenRes.RefreshToken, "refresh token")
+	})
 }
 
 func assertJWT(t *testing.T, jwt string, tokenType string) {
