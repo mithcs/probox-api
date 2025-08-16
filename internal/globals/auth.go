@@ -7,7 +7,7 @@ import (
 )
 
 var accessTokenAuth *jwtauth.JWTAuth
-var refreshTokenAuth *jwtauth.JWTAuth
+var RefreshTokenAuth *jwtauth.JWTAuth
 
 func init() {
 	atAlg := "HS256"
@@ -16,7 +16,7 @@ func init() {
 
 	rtAlg := "HS256"
 	rtSignKey := []byte("b-string-secret-256-bits-long-boom")
-	refreshTokenAuth = jwtauth.New(rtAlg, rtSignKey, nil)
+	RefreshTokenAuth = jwtauth.New(rtAlg, rtSignKey, nil)
 }
 
 func GenerateAccessToken(userId int) (string, error) {
@@ -43,7 +43,7 @@ func GenerateRefreshToken(userId int) (string, error) {
 	jwtauth.SetIssuedNow(claims)
 	jwtauth.SetExpiryIn(claims, 24*time.Hour)
 
-	_, refreshToken, err := refreshTokenAuth.Encode(claims)
+	_, refreshToken, err := RefreshTokenAuth.Encode(claims)
 	if err != nil {
 		return "", err
 	}
