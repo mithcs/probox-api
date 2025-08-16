@@ -22,22 +22,42 @@ type CreateUserResponse struct {
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
+	var error globals.ErrorResponse
+
 	var user CreateUserRequest
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		error.Title = "Server Error."
+		error.Details = "Could not read the body."
+
+		response, _ := json.Marshal(error)
+		w.Write(response)
+
 		return
 	}
 
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		error.Title = "Bad Request."
+		error.Details = "Could not parse body."
+
+		response, _ := json.Marshal(error)
+		w.Write(response)
+
 		return
 	}
 
 	err = user.validate()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		error.Title = "Bad Request."
+		error.Details = err.Error()
+
+		response, _ := json.Marshal(error)
+		w.Write(response)
+
 		return
 	}
 
@@ -47,6 +67,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		error.Title = "Server Error."
+		error.Details = "Could not generate tokens for you."
+
+		response, _ := json.Marshal(error)
+		w.Write(response)
+
 		return
 	}
 
@@ -58,6 +84,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	response, err := json.Marshal(tokens)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		error.Title = "Server Error."
+		error.Details = "Could not give you tokens."
+
+		response, _ := json.Marshal(error)
+		w.Write(response)
+
 		return
 	}
 
@@ -75,10 +107,9 @@ func (user *CreateUserRequest) validate() error {
 	}
 
 	// if the password has enough entropy, err is nil
-	// otherwise, a formatted error message is provided
 	err := passValidator.Validate(user.Password, 60)
 	if err != nil {
-		return err
+		return errors.New("Password is insecure.")
 	}
 
 	return nil

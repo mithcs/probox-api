@@ -7,6 +7,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/mithcs/probox-api/internal/globals"
 )
 
 func TestCreateUser(t *testing.T) {
@@ -15,13 +17,13 @@ func TestCreateUser(t *testing.T) {
 			Username: "",
 			Password: "correct horse battery staple",
 		}
-		data, err := json.Marshal(userReq)
+		reqData, err := json.Marshal(userReq)
 		if err != nil {
 			t.Errorf("got err %v, expected nil", err)
 		}
-		body := strings.NewReader(string(data))
+		reqBody := strings.NewReader(string(reqData))
 
-		req := httptest.NewRequest(http.MethodPost, "/users", body)
+		req := httptest.NewRequest(http.MethodPost, "/users", reqBody)
 		res := httptest.NewRecorder()
 		CreateUser(res, req)
 
@@ -31,7 +33,31 @@ func TestCreateUser(t *testing.T) {
 		if gotCode != wantCode {
 			t.Errorf("got status code %d, expected %d", gotCode, wantCode)
 		}
-		// test body here
+
+		resBody, err := io.ReadAll(res.Body)
+		if err != nil {
+			t.Errorf("got err %v, expected nil", err)
+		}
+
+		var error globals.ErrorResponse
+		err = json.Unmarshal(resBody, &error)
+		if err != nil {
+			t.Errorf("got err %v, expected nil", err)
+		}
+
+		gotTitle := error.Title
+		wantTitle := "Bad Request."
+
+		if gotTitle != wantTitle {
+			t.Errorf("got %q, expected %q", gotTitle, wantTitle)
+		}
+
+		gotDetails := error.Details
+		wantDetails := "Invalid username."
+
+		if gotDetails != wantDetails {
+			t.Errorf("got %q, expected %q", gotDetails, wantDetails)
+		}
 	})
 
 	t.Run("invalid password", func(t *testing.T) {
@@ -55,7 +81,31 @@ func TestCreateUser(t *testing.T) {
 		if gotCode != wantCode {
 			t.Errorf("got status code %d, expected %d", gotCode, wantCode)
 		}
-		// test body here
+
+		resBody, err := io.ReadAll(res.Body)
+		if err != nil {
+			t.Errorf("got err %v, expected nil", err)
+		}
+
+		var error globals.ErrorResponse
+		err = json.Unmarshal(resBody, &error)
+		if err != nil {
+			t.Errorf("got err %v, expected nil", err)
+		}
+
+		gotTitle := error.Title
+		wantTitle := "Bad Request."
+
+		if gotTitle != wantTitle {
+			t.Errorf("got %q, expected %q", gotTitle, wantTitle)
+		}
+
+		gotDetails := error.Details
+		wantDetails := "Password is insecure."
+
+		if gotDetails != wantDetails {
+			t.Errorf("got %q, expected %q", gotDetails, wantDetails)
+		}
 	})
 
 	t.Run("valid username and password", func(t *testing.T) {
