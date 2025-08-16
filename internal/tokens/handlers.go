@@ -2,10 +2,17 @@ package tokens
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
 
 	"github.com/mithcs/probox-api/internal/globals"
 )
+
+type CreateTokensRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
 
 type CreateTokensResponse struct {
 	AccessToken  string `json:"accessToken"`
@@ -18,9 +25,44 @@ type RefreshTokensResponse struct {
 }
 
 func CreateTokens(w http.ResponseWriter, r *http.Request) {
-	// get username and password from request body
-	// verify username and password
-	userId := 1
+	var error globals.ErrorResponse
+
+	var user CreateTokensRequest
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		error.Title = "Server Error."
+		error.Details = "Could not read the body."
+
+		response, _ := json.Marshal(error)
+		w.Write(response)
+
+		return
+	}
+
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		error.Title = "Bad Request."
+		error.Details = "Could not parse body."
+
+		response, _ := json.Marshal(error)
+		w.Write(response)
+
+		return
+	}
+
+	userId, err := user.verify()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		error.Title = "Bad Request."
+		error.Details = err.Error()
+
+		response, _ := json.Marshal(error)
+		w.Write(response)
+
+		return
+	}
 
 	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
 	if err != nil {
@@ -65,4 +107,16 @@ func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(response)
+}
+
+func (req *CreateTokensRequest) verify() (int, error) {
+	userId := 1
+
+	// verify username and password here
+	if req.Username == "username" &&
+		req.Password == "password" {
+		return -1, errors.New("Invalid Credentials.")
+	}
+
+	return userId, nil
 }
