@@ -1,6 +1,7 @@
 package globals
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/go-chi/jwtauth/v5"
@@ -62,4 +63,34 @@ func GenerateAccessAndRefreshTokens(userId int) (string, string, error) {
 	}
 
 	return accessToken, refreshToken, err
+}
+
+func AuthenticatorMiddleware(ja *jwtauth.JWTAuth) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		hfn := func(w http.ResponseWriter, r *http.Request) {
+			token, _, err := jwtauth.FromContext(r.Context())
+
+			if err != nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				w.Write(ReturnErrorResponse(
+					"Bad Request",
+					err.Error(),
+				))
+				return
+			}
+
+			if token == nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				w.Write(ReturnErrorResponse(
+					"Bad Request",
+					"Token is empty.",
+				))
+				return
+			}
+
+			// Token is authenticated, pass it through
+			next.ServeHTTP(w, r)
+		}
+		return http.HandlerFunc(hfn)
+	}
 }
