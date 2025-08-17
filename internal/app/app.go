@@ -37,9 +37,7 @@ func (app *App) Run() error {
 
 	registerRoutes(app.router)
 
-	http.ListenAndServe(app.addr, app.router)
-
-	return nil
+	return http.ListenAndServe(app.addr, app.router)
 }
 
 func registerRoutes(router *chi.Mux) {

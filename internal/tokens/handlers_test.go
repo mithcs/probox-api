@@ -20,10 +20,12 @@ func TestCreateTokens(t *testing.T) {
 			Username: "username",
 			Password: "password",
 		}
+
 		reqData, err := json.Marshal(userReq)
 		if err != nil {
 			t.Errorf("got err %v, expected nil", err)
 		}
+
 		reqBody := strings.NewReader(string(reqData))
 
 		req := httptest.NewRequest(http.MethodPost, "/tokens", reqBody)
@@ -43,6 +45,7 @@ func TestCreateTokens(t *testing.T) {
 		}
 
 		var error globals.ErrorResponse
+
 		err = json.Unmarshal(resBody, &error)
 		if err != nil {
 			t.Errorf("got err %v, expected nil", err)
@@ -68,10 +71,12 @@ func TestCreateTokens(t *testing.T) {
 			Username: "example",
 			Password: "correct horse battery staple",
 		}
+
 		reqData, err := json.Marshal(userReq)
 		if err != nil {
 			t.Errorf("got err %v, expected nil", err)
 		}
+
 		reqBody := strings.NewReader(string(reqData))
 
 		req := httptest.NewRequest(http.MethodPost, "/tokens", reqBody)
@@ -91,6 +96,7 @@ func TestCreateTokens(t *testing.T) {
 		}
 
 		var tokens CreateTokensResponse
+
 		err = json.Unmarshal(resBody, &tokens)
 		if err != nil {
 			t.Errorf("got err %v, expected nil", err)
@@ -110,6 +116,7 @@ func TestRefreshTokens(t *testing.T) {
 		if err != nil {
 			t.Errorf("got err %v, expected nil", err)
 		}
+
 		jwt, err := globals.RefreshTokenAuth.Decode(jwtString)
 		if err != nil {
 			t.Errorf("got err %v, expected nil", err)
@@ -135,6 +142,7 @@ func TestRefreshTokens(t *testing.T) {
 		}
 
 		var rTokenRes RefreshTokensResponse
+
 		err = json.Unmarshal(resBody, &rTokenRes)
 		if err != nil {
 			t.Errorf("got err %v, expected nil", err)

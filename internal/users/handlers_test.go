@@ -17,10 +17,12 @@ func TestCreateUser(t *testing.T) {
 			Username: "",
 			Password: "correct horse battery staple",
 		}
+
 		reqData, err := json.Marshal(userReq)
 		if err != nil {
 			t.Errorf("got err %v, expected nil", err)
 		}
+
 		reqBody := strings.NewReader(string(reqData))
 
 		req := httptest.NewRequest(http.MethodPost, "/users", reqBody)
@@ -40,6 +42,7 @@ func TestCreateUser(t *testing.T) {
 		}
 
 		var error globals.ErrorResponse
+
 		err = json.Unmarshal(resBody, &error)
 		if err != nil {
 			t.Errorf("got err %v, expected nil", err)
@@ -65,10 +68,12 @@ func TestCreateUser(t *testing.T) {
 			Username: "example",
 			Password: "",
 		}
+
 		data, err := json.Marshal(userReq)
 		if err != nil {
 			t.Errorf("got err %v, expected nil", err)
 		}
+
 		body := strings.NewReader(string(data))
 
 		req := httptest.NewRequest(http.MethodPost, "/users", body)
@@ -88,6 +93,7 @@ func TestCreateUser(t *testing.T) {
 		}
 
 		var error globals.ErrorResponse
+
 		err = json.Unmarshal(resBody, &error)
 		if err != nil {
 			t.Errorf("got err %v, expected nil", err)
@@ -113,10 +119,12 @@ func TestCreateUser(t *testing.T) {
 			Username: "example",
 			Password: "correct horse battery staple",
 		}
+
 		data, err := json.Marshal(userReq)
 		if err != nil {
 			t.Errorf("got err %v, expected nil", err)
 		}
+
 		body := strings.NewReader(string(data))
 
 		req := httptest.NewRequest(http.MethodPost, "/users", body)

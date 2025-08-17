@@ -32,6 +32,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			"Could not read the body.",
 		)
 		w.Write(response)
+
 		return
 	}
 
@@ -43,6 +44,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			"Could not parse body.",
 		)
 		w.Write(response)
+
 		return
 	}
 
@@ -54,10 +56,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			err.Error(),
 		)
 		w.Write(response)
+
 		return
 	}
 
 	// store username and hash of password
+	// and get userId
 	userId := 1
 
 	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
@@ -68,6 +72,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			"Could not generate tokens for you.",
 		)
 		w.Write(response)
+
 		return
 	}
 
@@ -84,6 +89,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 			"Could not give you tokens.",
 		)
 		w.Write(response)
+
 		return
 	}
 

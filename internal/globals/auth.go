@@ -57,6 +57,7 @@ func GenerateAccessAndRefreshTokens(userId int) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
+
 	refreshToken, err := GenerateRefreshToken(userId)
 	if err != nil {
 		return "", "", err

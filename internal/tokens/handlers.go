@@ -29,6 +29,7 @@ type RefreshTokensResponse struct {
 
 func CreateTokens(w http.ResponseWriter, r *http.Request) {
 	var user CreateTokensRequest
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

@@ -14,6 +14,5 @@ func ReturnErrorResponse(title string, details string) []byte {
 	}
 
 	res, _ := json.Marshal(error)
-
 	return res
 }
