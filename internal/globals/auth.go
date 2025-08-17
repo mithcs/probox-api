@@ -22,7 +22,7 @@ func init() {
 
 func GenerateAccessToken(userId int) (string, error) {
 	claims := map[string]any{
-		"user_id": userId,
+		"uid": userId,
 	}
 
 	jwtauth.SetIssuedNow(claims)
@@ -38,7 +38,7 @@ func GenerateAccessToken(userId int) (string, error) {
 
 func GenerateRefreshToken(userId int) (string, error) {
 	claims := map[string]any{
-		"user_id": 1,
+		"uid": 1,
 	}
 
 	jwtauth.SetIssuedNow(claims)

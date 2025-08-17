@@ -111,12 +111,12 @@ func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := strconv.Atoi(fmt.Sprintf("%v", claims["user_id"]))
+	userId, err := strconv.Atoi(fmt.Sprintf("%v", claims["uid"]))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		response := globals.ReturnErrorResponse(
 			"Bad Request",
-			"Invalid user_id",
+			"Invalid uid",
 		)
 		w.Write(response)
 
