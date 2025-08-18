@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mithcs/probox-api/internal/problems"
 	"github.com/mithcs/probox-api/internal/tokens"
 	"github.com/mithcs/probox-api/internal/users"
 )
@@ -47,4 +48,5 @@ func registerRoutes(router *chi.Mux) {
 
 	tokens.SetupTokens(router)
 	users.SetupUsers(router)
+	problems.SetupProblems(router)
 }
