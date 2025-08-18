@@ -1,0 +1,27 @@
+package am
+
+import "testing"
+
+func AssertInt(t *testing.T, got int, want int) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("got %d, expcted %d", got, want)
+	}
+}
+
+func AssertString(t *testing.T, got string, want string) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("got %q, expected %q", got, want)
+	}
+}
+
+func AssertErrNil(t *testing.T, err error) {
+	t.Helper()
+
+	if err != nil {
+		t.Errorf("got err %v, expected nil", err)
+	}
+}
