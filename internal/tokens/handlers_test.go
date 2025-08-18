@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/mithcs/probox-api/internal/globals"
 	"github.com/mithcs/probox-api/internal/users"
+	"github.com/mithcs/probox-api/pkg/am"
 )
 
 func TestCreateTokens(t *testing.T) {
@@ -22,48 +23,31 @@ func TestCreateTokens(t *testing.T) {
 		}
 
 		reqData, err := json.Marshal(userReq)
-		if err != nil {
-			t.Errorf("got err %v, expected nil", err)
-		}
+		am.AssertErrNil(t, err)
 
 		reqBody := strings.NewReader(string(reqData))
-
 		req := httptest.NewRequest(http.MethodPost, "/tokens", reqBody)
 		res := httptest.NewRecorder()
 		CreateTokens(res, req)
 
 		gotCode := res.Code
 		wantCode := http.StatusBadRequest
-
-		if gotCode != wantCode {
-			t.Errorf("got status code %d, expected %d", gotCode, wantCode)
-		}
+		am.AssertInt(t, gotCode, wantCode)
 
 		resBody, err := io.ReadAll(res.Body)
-		if err != nil {
-			t.Errorf("got err %v, expected nil", err)
-		}
+		am.AssertErrNil(t, err)
 
 		var error globals.ErrorResponse
-
 		err = json.Unmarshal(resBody, &error)
-		if err != nil {
-			t.Errorf("got err %v, expected nil", err)
-		}
+		am.AssertErrNil(t, err)
 
 		gotTitle := error.Title
 		wantTitle := "Bad Request."
-
-		if gotTitle != wantTitle {
-			t.Errorf("got %q, expected %q", gotTitle, wantTitle)
-		}
+		am.AssertString(t, gotTitle, wantTitle)
 
 		gotDetails := error.Details
 		wantDetails := "Invalid Credentials."
-
-		if gotDetails != wantDetails {
-			t.Errorf("got %q, expected %q", gotDetails, wantDetails)
-		}
+		am.AssertString(t, gotDetails, wantDetails)
 	})
 
 	t.Run("valid credentials", func(t *testing.T) {
@@ -73,34 +57,23 @@ func TestCreateTokens(t *testing.T) {
 		}
 
 		reqData, err := json.Marshal(userReq)
-		if err != nil {
-			t.Errorf("got err %v, expected nil", err)
-		}
+		am.AssertErrNil(t, err)
 
 		reqBody := strings.NewReader(string(reqData))
-
 		req := httptest.NewRequest(http.MethodPost, "/tokens", reqBody)
 		res := httptest.NewRecorder()
 		CreateTokens(res, req)
 
 		gotCode := res.Code
 		wantCode := http.StatusOK
-
-		if gotCode != wantCode {
-			t.Errorf("got status code %d, expected %d", gotCode, wantCode)
-		}
+		am.AssertInt(t, gotCode, wantCode)
 
 		resBody, err := io.ReadAll(res.Body)
-		if err != nil {
-			t.Errorf("got err %v, expected nil", err)
-		}
+		am.AssertErrNil(t, err)
 
 		var tokens CreateTokensResponse
-
 		err = json.Unmarshal(resBody, &tokens)
-		if err != nil {
-			t.Errorf("got err %v, expected nil", err)
-		}
+		am.AssertErrNil(t, err)
 
 		assertJWT(t, tokens.AccessToken, "access token")
 		assertJWT(t, tokens.RefreshToken, "refresh token")
@@ -113,14 +86,10 @@ func TestRefreshTokens(t *testing.T) {
 		userId := 1
 
 		jwtString, err := globals.GenerateRefreshToken(userId)
-		if err != nil {
-			t.Errorf("got err %v, expected nil", err)
-		}
+		am.AssertErrNil(t, err)
 
 		jwt, err := globals.RefreshTokenAuth.Decode(jwtString)
-		if err != nil {
-			t.Errorf("got err %v, expected nil", err)
-		}
+		am.AssertErrNil(t, err)
 
 		ctx := context.WithValue(t.Context(), jwtauth.TokenCtxKey, jwt)
 		ctx = context.WithValue(ctx, jwtauth.ErrorCtxKey, nil)
@@ -131,22 +100,14 @@ func TestRefreshTokens(t *testing.T) {
 
 		gotCode := res.Code
 		wantCode := http.StatusOK
-
-		if gotCode != wantCode {
-			t.Errorf("got status code %d, expected %d", gotCode, wantCode)
-		}
+		am.AssertInt(t, gotCode, wantCode)
 
 		resBody, err := io.ReadAll(res.Body)
-		if err != nil {
-			t.Errorf("got err %v, expected nil", err)
-		}
+		am.AssertErrNil(t, err)
 
 		var rTokenRes RefreshTokensResponse
-
 		err = json.Unmarshal(resBody, &rTokenRes)
-		if err != nil {
-			t.Errorf("got err %v, expected nil", err)
-		}
+		am.AssertErrNil(t, err)
 
 		assertJWT(t, rTokenRes.AccessToken, "access token")
 		assertJWT(t, rTokenRes.RefreshToken, "refresh token")
