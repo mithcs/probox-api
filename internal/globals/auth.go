@@ -7,13 +7,13 @@ import (
 	"github.com/go-chi/jwtauth/v5"
 )
 
-var accessTokenAuth *jwtauth.JWTAuth
+var AccessTokenAuth *jwtauth.JWTAuth
 var RefreshTokenAuth *jwtauth.JWTAuth
 
 func init() {
 	atAlg := "HS256"
 	atSignKey := []byte("a-string-secret-256-bits-long-boom")
-	accessTokenAuth = jwtauth.New(atAlg, atSignKey, nil)
+	AccessTokenAuth = jwtauth.New(atAlg, atSignKey, nil)
 
 	rtAlg := "HS256"
 	rtSignKey := []byte("b-string-secret-256-bits-long-boom")
@@ -28,7 +28,7 @@ func GenerateAccessToken(userId int) (string, error) {
 	jwtauth.SetIssuedNow(claims)
 	jwtauth.SetExpiryIn(claims, 10*time.Minute)
 
-	_, accessToken, err := accessTokenAuth.Encode(claims)
+	_, accessToken, err := AccessTokenAuth.Encode(claims)
 	if err != nil {
 		return "", err
 	}
