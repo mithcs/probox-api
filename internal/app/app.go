@@ -2,9 +2,11 @@ package app
 
 import (
 	"context"
+	"database/sql"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/mithcs/probox-api/internal/problems"
 	"github.com/mithcs/probox-api/internal/solutions"
 	"github.com/mithcs/probox-api/internal/tokens"
@@ -35,7 +37,16 @@ func New(ctx context.Context, addr string, db Database, router *chi.Mux) App {
 }
 
 func (app *App) Run() error {
-	// setup db connection here
+	conn, err := sql.Open(app.db.Driver, app.db.DSN)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	// err = conn.Ping()
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	registerRoutes(app.router)
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/mithcs/probox-api/internal/app"
@@ -11,8 +12,8 @@ func main() {
 	ctx := context.Background()
 	addr := ":8080"
 	db := app.Database{
-		Driver: "sample",
-		DSN:    "sample",
+		Driver: "pgx",
+		DSN:    os.Getenv("DATABASE_DSN"),
 	}
 	router := chi.NewRouter()
 
