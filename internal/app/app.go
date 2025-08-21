@@ -7,6 +7,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/mithcs/probox-api/internal/db"
+	"github.com/mithcs/probox-api/internal/globals"
 	"github.com/mithcs/probox-api/internal/problems"
 	"github.com/mithcs/probox-api/internal/solutions"
 	"github.com/mithcs/probox-api/internal/tokens"
@@ -42,6 +44,8 @@ func (app *App) Run() error {
 		return err
 	}
 	defer conn.Close()
+
+	globals.Queries = db.New(conn)
 
 	// err = conn.Ping()
 	// if err != nil {
