@@ -111,7 +111,7 @@ func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := strconv.Atoi(fmt.Sprintf("%v", claims["uid"]))
+	userId, err := strconv.ParseInt(fmt.Sprintf("%v", claims["uid"]), 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		response := globals.ReturnErrorResponse(
@@ -155,8 +155,8 @@ func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func (req *CreateTokensRequest) verify() (int, error) {
-	userId := 1
+func (req *CreateTokensRequest) verify() (int64, error) {
+	userId := int64(1)
 
 	// verify username and password here
 	if req.Username == "username" &&
