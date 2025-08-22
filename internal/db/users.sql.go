@@ -15,7 +15,7 @@ INSERT INTO users (
 ) VALUES (
     $1, $2
 )
-RETURNING id, username, password
+RETURNING id
 `
 
 type CreateUserParams struct {
@@ -23,11 +23,11 @@ type CreateUserParams struct {
 	Password interface{}
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.Password)
-	var i User
-	err := row.Scan(&i.ID, &i.Username, &i.Password)
-	return i, err
+	var id int64
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getUser = `-- name: GetUser :one

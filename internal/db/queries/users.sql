@@ -4,7 +4,7 @@ INSERT INTO users (
 ) VALUES (
     $1, $2
 )
-RETURNING *;
+RETURNING id;
 
 -- name: GetUser :one
 SELECT * FROM users
