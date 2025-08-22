@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 	passValidator "github.com/wagslane/go-password-validator"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type CreateUserRequest struct {
@@ -60,9 +62,32 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// store username and hash of password
-	// and get userId
-	userId := 1
+	hashedPass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		response := globals.ReturnErrorResponse(
+			"Server Error.",
+			"Could not hash your password.",
+		)
+		w.Write(response)
+
+		return
+	}
+
+	userId, err := globals.Queries.CreateUser(r.Context(), db.CreateUserParams{
+		Username: user.Username,
+		Password: hashedPass,
+	})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		response := globals.ReturnErrorResponse(
+			"Server Error.",
+			"Could not store credentials.",
+		)
+		w.Write(response)
+
+		return
+	}
 
 	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
 	if err != nil {
