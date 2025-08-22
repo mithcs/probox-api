@@ -20,7 +20,7 @@ func init() {
 	RefreshTokenAuth = jwtauth.New(rtAlg, rtSignKey, nil)
 }
 
-func GenerateAccessToken(userId int) (string, error) {
+func GenerateAccessToken(userId int64) (string, error) {
 	claims := map[string]any{
 		"uid": userId,
 	}
@@ -36,7 +36,7 @@ func GenerateAccessToken(userId int) (string, error) {
 	return accessToken, nil
 }
 
-func GenerateRefreshToken(userId int) (string, error) {
+func GenerateRefreshToken(userId int64) (string, error) {
 	claims := map[string]any{
 		"uid": 1,
 	}
@@ -52,7 +52,7 @@ func GenerateRefreshToken(userId int) (string, error) {
 	return refreshToken, nil
 }
 
-func GenerateAccessAndRefreshTokens(userId int) (string, string, error) {
+func GenerateAccessAndRefreshTokens(userId int64) (string, string, error) {
 	accessToken, err := GenerateAccessToken(userId)
 	if err != nil {
 		return "", "", err
