@@ -72,20 +72,22 @@ func AuthenticatorMiddleware(ja *jwtauth.JWTAuth) func(http.Handler) http.Handle
 			token, _, err := jwtauth.FromContext(r.Context())
 
 			if err != nil {
-				w.WriteHeader(http.StatusUnauthorized)
-				w.Write(ReturnErrorResponse(
-					"Bad Request",
-					err.Error(),
-				))
+				WriteErrorResponse(w, Error{
+					Status:  http.StatusUnauthorized,
+					Title:   "Bad Request.",
+					Details: err.Error(),
+				})
+
 				return
 			}
 
 			if token == nil {
-				w.WriteHeader(http.StatusUnauthorized)
-				w.Write(ReturnErrorResponse(
-					"Bad Request",
-					"Token is empty.",
-				))
+				WriteErrorResponse(w, Error{
+					Status:  http.StatusUnauthorized,
+					Title:   "Bad Request.",
+					Details: "Token is empty.",
+				})
+
 				return
 			}
 
