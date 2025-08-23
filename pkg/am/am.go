@@ -1,6 +1,9 @@
 package am
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func AssertInt(t *testing.T, got int, want int) {
 	t.Helper()
@@ -39,5 +42,14 @@ func AssertAny(t *testing.T, got any, want any) {
 
 	if got != want {
 		t.Errorf("got %v, expected %v", got, want)
+	}
+}
+
+func AssertJWT(t *testing.T, jwt string, tokenType string) {
+	t.Helper()
+
+	if !strings.HasPrefix(jwt, "eyJhbGciOi") ||
+		strings.Count(jwt, ".") != 2 {
+		t.Errorf("invalid %s", tokenType)
 	}
 }
