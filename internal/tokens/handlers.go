@@ -1,12 +1,14 @@
 package tokens
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+
 	"io"
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/mithcs/probox-api/internal/globals"
@@ -75,21 +77,8 @@ func CreateTokens(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-// TODO: refactor RefreshTokens()
-
 func RefreshTokens(w http.ResponseWriter, r *http.Request) {
-	_, claims, err := jwtauth.FromContext(r.Context())
-	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: "You are not authorized.",
-		})
-
-		return
-	}
-
-	userId, err := strconv.ParseInt(fmt.Sprintf("%v", claims["uid"]), 10, 64)
+	userId, err := retrieveUserId(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		globals.WriteErrorResponse(w, globals.Error{
@@ -101,7 +90,7 @@ func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
+	tokens, err := generateTokens(userId)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusInternalServerError,
@@ -110,11 +99,6 @@ func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 		})
 
 		return
-	}
-
-	tokens := RefreshTokensResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
 	}
 
 	response, err := json.Marshal(tokens)
@@ -168,4 +152,15 @@ func generateTokens(userId int64) (CreateTokensResponse, error) {
 	}
 
 	return tokens, err
+}
+
+func retrieveUserId(ctx context.Context) (int64, error) {
+	_, claims, err := jwtauth.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	userId, err := strconv.ParseInt(fmt.Sprintf("%v", claims["uid"]), 10, 64)
+
+	return userId, err
 }
