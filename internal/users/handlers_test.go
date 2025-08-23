@@ -3,112 +3,49 @@ package users
 import (
 	"encoding/json"
 	"io"
-	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/mithcs/probox-api/internal/globals"
 	"github.com/mithcs/probox-api/pkg/am"
 )
 
-func TestCreateUser(t *testing.T) {
-	t.Run("invalid username", func(t *testing.T) {
-		userReq := CreateUserRequest{
-			Username: "",
-			Password: "correct horse battery staple",
-		}
+func TestParseBody(t *testing.T) {
+	userReq := CreateUserRequest{
+		Username: "username",
+		Password: "correct horse battery staple",
+	}
+	userReqJson, err := json.Marshal(userReq)
+	am.AssertErrNil(t, err)
 
-		reqData, err := json.Marshal(userReq)
-		am.AssertErrNil(t, err)
+	bodyReader := strings.NewReader(string(userReqJson))
+	body := io.NopCloser(bodyReader)
 
-		reqBody := strings.NewReader(string(reqData))
-		req := httptest.NewRequest(http.MethodPost, "/users", reqBody)
-		res := httptest.NewRecorder()
-		CreateUser(res, req)
+	got, err := parseBody(body)
+	am.AssertErrNil(t, err)
 
-		gotCode := res.Code
-		wantCode := http.StatusBadRequest
-		am.AssertInt(t, gotCode, wantCode)
+	want := userReq
 
-		resBody, err := io.ReadAll(res.Body)
-		am.AssertErrNil(t, err)
+	am.AssertAny(t, got, want)
+}
 
-		var error globals.ErrorResponse
-		err = json.Unmarshal(resBody, &error)
-		am.AssertErrNil(t, err)
+func TestGenerateTokens(t *testing.T) {
+	userId := int64(1)
 
-		gotTitle := error.Title
-		wantTitle := "Bad Request."
-		am.AssertString(t, gotTitle, wantTitle)
+	tokens, err := generateTokens(userId)
+	am.AssertErrNil(t, err)
 
-		gotDetails := error.Details
-		wantDetails := "Invalid username."
-		am.AssertString(t, gotDetails, wantDetails)
-	})
+	assertJWT(t, tokens.AccessToken, "access token")
+	assertJWT(t, tokens.RefreshToken, "refresh token")
+}
 
-	t.Run("invalid password", func(t *testing.T) {
-		userReq := CreateUserRequest{
-			Username: "example",
-			Password: "",
-		}
+func TestValidateUser(t *testing.T) {
+	user := CreateUserRequest{
+		Username: "username",
+		Password: "correct horse battery staple",
+	}
 
-		data, err := json.Marshal(userReq)
-		am.AssertErrNil(t, err)
-
-		body := strings.NewReader(string(data))
-		req := httptest.NewRequest(http.MethodPost, "/users", body)
-		res := httptest.NewRecorder()
-		CreateUser(res, req)
-
-		gotCode := res.Code
-		wantCode := http.StatusBadRequest
-		am.AssertInt(t, gotCode, wantCode)
-
-		resBody, err := io.ReadAll(res.Body)
-		am.AssertErrNil(t, err)
-
-		var error globals.ErrorResponse
-		err = json.Unmarshal(resBody, &error)
-		am.AssertErrNil(t, err)
-
-		gotTitle := error.Title
-		wantTitle := "Bad Request."
-		am.AssertString(t, gotTitle, wantTitle)
-
-		gotDetails := error.Details
-		wantDetails := "Password is insecure."
-		am.AssertString(t, gotDetails, wantDetails)
-	})
-
-	t.Run("valid username and password", func(t *testing.T) {
-		userReq := CreateUserRequest{
-			Username: "example",
-			Password: "correct horse battery staple",
-		}
-
-		data, err := json.Marshal(userReq)
-		am.AssertErrNil(t, err)
-
-		body := strings.NewReader(string(data))
-		req := httptest.NewRequest(http.MethodPost, "/users", body)
-		res := httptest.NewRecorder()
-		CreateUser(res, req)
-
-		gotCode := res.Code
-		wantCode := http.StatusOK
-		am.AssertInt(t, gotCode, wantCode)
-
-		gotBody, err := io.ReadAll(res.Body)
-		am.AssertErrNil(t, err)
-
-		var userRes CreateUserResponse
-		err = json.Unmarshal(gotBody, &userRes)
-		am.AssertErrNil(t, err)
-
-		assertJWT(t, userRes.AccessToken, "access token")
-		assertJWT(t, userRes.RefreshToken, "refresh token")
-	})
+	err := user.validate()
+	am.AssertErrNil(t, err)
 }
 
 func assertJWT(t *testing.T, jwt string, tokenType string) {

@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -24,96 +25,68 @@ type CreateUserResponse struct {
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	var user CreateUserRequest
-
-	body, err := io.ReadAll(r.Body)
+	user, err := parseBody(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not read the body.",
-		)
-		w.Write(response)
-
-		return
-	}
-
-	err = json.Unmarshal(body, &user)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		response := globals.ReturnErrorResponse(
-			"Bad Request.",
-			"Could not parse body.",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: "Could not parse body.",
+		})
 
 		return
 	}
 
 	err = user.validate()
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		response := globals.ReturnErrorResponse(
-			"Bad Request.",
-			err.Error(),
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: err.Error(),
+		})
 
 		return
 	}
 
-	hashedPass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	hashedPass, err := hashPass(user.Password)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not hash your password.",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not hash your password.",
+		})
 
 		return
 	}
 
-	userId, err := globals.Queries.CreateUser(r.Context(), db.CreateUserParams{
-		Username: user.Username,
-		Password: hashedPass,
-	})
+	userId, err := storeUser(r.Context(), user.Username, hashedPass)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not store credentials.",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not store credentials.",
+		})
 
 		return
 	}
 
-	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
+	tokens, err := generateTokens(userId)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not generate tokens for you.",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not generate tokens for you.",
+		})
 
 		return
-	}
-
-	tokens := CreateUserResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
 	}
 
 	response, err := json.Marshal(tokens)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not give you tokens.",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not give you tokens.",
+		})
 
 		return
 	}
@@ -138,4 +111,46 @@ func (user *CreateUserRequest) validate() error {
 	}
 
 	return nil
+}
+
+func parseBody(body io.ReadCloser) (CreateUserRequest, error) {
+	var user CreateUserRequest
+
+	readBody, err := io.ReadAll(body)
+	if err != nil {
+		return user, err
+	}
+
+	err = json.Unmarshal(readBody, &user)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func hashPass(pass string) (string, error) {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
+
+	return string(hashed), err
+}
+
+func storeUser(ctx context.Context, username string, password string) (int64, error) {
+	userId, err := globals.Queries.CreateUser(ctx, db.CreateUserParams{
+		Username: username,
+		Password: password,
+	})
+
+	return userId, err
+}
+
+func generateTokens(userId int64) (CreateUserResponse, error) {
+	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
+
+	tokens := CreateUserResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+
+	return tokens, err
 }
