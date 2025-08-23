@@ -34,8 +34,8 @@ func TestGenerateTokens(t *testing.T) {
 	tokens, err := generateTokens(userId)
 	am.AssertErrNil(t, err)
 
-	assertJWT(t, tokens.AccessToken, "access token")
-	assertJWT(t, tokens.RefreshToken, "refresh token")
+	am.AssertJWT(t, tokens.AccessToken, "access token")
+	am.AssertJWT(t, tokens.RefreshToken, "refresh token")
 }
 
 func TestValidateUser(t *testing.T) {
@@ -68,13 +68,4 @@ func TestValidateUser(t *testing.T) {
 		err := user.validate()
 		am.AssertErrNotNil(t, err)
 	})
-}
-
-func assertJWT(t *testing.T, jwt string, tokenType string) {
-	t.Helper()
-
-	if !strings.HasPrefix(jwt, "eyJhbGciOi") ||
-		strings.Count(jwt, ".") != 2 {
-		t.Errorf("invalid %s", tokenType)
-	}
 }
