@@ -28,69 +28,46 @@ type RefreshTokensResponse struct {
 }
 
 func CreateTokens(w http.ResponseWriter, r *http.Request) {
-	var user CreateTokensRequest
-
-	body, err := io.ReadAll(r.Body)
+	creds, err := parseBody(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not read the body.",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: "Could not parse body.",
+		})
 
 		return
 	}
 
-	err = json.Unmarshal(body, &user)
+	userId, err := creds.verify()
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		response := globals.ReturnErrorResponse(
-			"Bad Request.",
-			"Could not parse body.",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: err.Error(),
+		})
 
 		return
 	}
 
-	userId, err := user.verify()
+	tokens, err := generateTokens(userId)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		response := globals.ReturnErrorResponse(
-			"Bad Request.",
-			err.Error(),
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not generate tokens for you.",
+		})
 
 		return
-	}
-
-	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not generate tokens for you.",
-		)
-		w.Write(response)
-
-		return
-	}
-
-	tokens := CreateTokensResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
 	}
 
 	response, err := json.Marshal(tokens)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not give you tokens.",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not give you tokens.",
+		})
 
 		return
 	}
@@ -98,15 +75,16 @@ func CreateTokens(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
+// TODO: refactor RefreshTokens()
+
 func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 	_, claims, err := jwtauth.FromContext(r.Context())
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		response := globals.ReturnErrorResponse(
-			"Bad Request",
-			"You are not authorized",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: "You are not authorized.",
+		})
 
 		return
 	}
@@ -114,23 +92,22 @@ func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 	userId, err := strconv.ParseInt(fmt.Sprintf("%v", claims["uid"]), 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		response := globals.ReturnErrorResponse(
-			"Bad Request",
-			"Invalid uid",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: "You are not authorized",
+		})
 
 		return
 	}
 
 	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not generate tokens for you.",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not generate tokens for you.",
+		})
 
 		return
 	}
@@ -142,12 +119,11 @@ func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 
 	response, err := json.Marshal(tokens)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		res := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not give you tokens.",
-		)
-		w.Write(res)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not give you tokens.",
+		})
 
 		return
 	}
@@ -165,4 +141,31 @@ func (req *CreateTokensRequest) verify() (int64, error) {
 	}
 
 	return userId, nil
+}
+
+func parseBody(body io.ReadCloser) (CreateTokensRequest, error) {
+	var creds CreateTokensRequest
+
+	readBody, err := io.ReadAll(body)
+	if err != nil {
+		return creds, err
+	}
+
+	err = json.Unmarshal(readBody, &creds)
+	if err != nil {
+		return creds, err
+	}
+
+	return creds, nil
+}
+
+func generateTokens(userId int64) (CreateTokensResponse, error) {
+	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
+
+	tokens := CreateTokensResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+
+	return tokens, err
 }
