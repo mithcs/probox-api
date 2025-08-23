@@ -26,6 +26,14 @@ func AssertErrNil(t *testing.T, err error) {
 	}
 }
 
+func AssertErrNotNil(t *testing.T, err error) {
+	t.Helper()
+
+	if err == nil {
+		t.Errorf("got err nil, expected not nil")
+	}
+}
+
 func AssertAny(t *testing.T, got any, want any) {
 	t.Helper()
 
