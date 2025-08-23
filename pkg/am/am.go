@@ -25,3 +25,11 @@ func AssertErrNil(t *testing.T, err error) {
 		t.Errorf("got err %v, expected nil", err)
 	}
 }
+
+func AssertAny(t *testing.T, got any, want any) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("got %v, expected %v", got, want)
+	}
+}
