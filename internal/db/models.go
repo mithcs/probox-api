@@ -4,6 +4,12 @@
 
 package db
 
+type Problem struct {
+	ID          int64
+	Title       string
+	Description string
+}
+
 type User struct {
 	ID       int64
 	Username string
