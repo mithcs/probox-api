@@ -2,7 +2,9 @@ package tokens
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -144,13 +146,17 @@ func (req *CreateTokensRequest) verify(ctx context.Context) (int64, error) {
 
 func verifyCredentials(ctx context.Context, username string, password string) (int64, error) {
 	user, err := globals.Queries.GetUserByUsername(ctx, username)
+	if err == sql.ErrNoRows {
+		return 0, errors.New("Incorrect username.")
+	}
 	if err != nil {
-		return 0, err
+		// TODO: Give meaningful error message
+		return 0, errors.New("TODO")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return 0, err
+		return 0, errors.New("Incorrect password.")
 	}
 
 	return user.ID, nil
