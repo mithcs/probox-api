@@ -35,7 +35,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = user.validate()
+	err = user.validate(r.Context())
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
@@ -119,7 +119,7 @@ func generateTokens(userId int64) (CreateUserResponse, error) {
 	return tokens, err
 }
 
-func (user *CreateUserRequest) validate() error {
+func (user *CreateUserRequest) validate(ctx context.Context) error {
 	if err := validateUsername(user.Username); err != nil {
 		return err
 	}
@@ -128,7 +128,7 @@ func (user *CreateUserRequest) validate() error {
 		return errors.New("Password is insecure.")
 	}
 
-	if exists := usernameExists(user.Username); exists != false {
+	if exists := usernameExists(ctx, user.Username); exists {
 		return errors.New("Username already exists.")
 	}
 
@@ -157,10 +157,11 @@ func validatePassword(password string) error {
 	return nil
 }
 
-func usernameExists(username string) bool {
-	if username == "exists" {
-		return true
+func usernameExists(ctx context.Context, username string) bool {
+	user, _ := globals.Queries.GetUserByUsername(ctx, username)
+	if user.ID == 0 || user.Username == "" || user.Password == "" {
+		return false
 	}
 
-	return false
+	return true
 }
