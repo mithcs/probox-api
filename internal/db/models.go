@@ -7,5 +7,5 @@ package db
 type User struct {
 	ID       int64
 	Username string
-	Password interface{}
+	Password string
 }
