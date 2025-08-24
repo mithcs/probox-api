@@ -15,7 +15,7 @@ INSERT INTO problems (
 ) VALUES (
     $1, $2
 )
-RETURNING id
+RETURNING id, title, description
 `
 
 type CreateProblemParams struct {
@@ -23,9 +23,9 @@ type CreateProblemParams struct {
 	Description string
 }
 
-func (q *Queries) CreateProblem(ctx context.Context, arg CreateProblemParams) (int64, error) {
+func (q *Queries) CreateProblem(ctx context.Context, arg CreateProblemParams) (Problem, error) {
 	row := q.db.QueryRowContext(ctx, createProblem, arg.Title, arg.Description)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
+	var i Problem
+	err := row.Scan(&i.ID, &i.Title, &i.Description)
+	return i, err
 }

@@ -4,4 +4,4 @@ INSERT INTO problems (
 ) VALUES (
     $1, $2
 )
-RETURNING id;
+RETURNING *;
