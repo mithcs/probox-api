@@ -16,34 +16,30 @@ func TestGenerateTokens(t *testing.T) {
 	am.AssertJWT(t, tokens.RefreshToken, "refresh token")
 }
 
-func TestValidateUser(t *testing.T) {
-	t.Run("valid username and password", func(t *testing.T) {
-		user := CreateUserRequest{
-			Username: "username",
-			Password: "correct horse battery staple",
-		}
-
-		err := user.validate()
+func TestValidateUsername(t *testing.T) {
+	t.Run("valid username", func(t *testing.T) {
+		username := "valid"
+		err := validateUsername(username)
 		am.AssertErrNil(t, err)
 	})
 
 	t.Run("invalid username", func(t *testing.T) {
-		user := CreateUserRequest{
-			Username: "jj",
-			Password: "correct horse battery staple",
-		}
-
-		err := user.validate()
+		username := "1nval1d"
+		err := validateUsername(username)
 		am.AssertErrNotNil(t, err)
+	})
+}
+
+func TestValidatePassword(t *testing.T) {
+	t.Run("valid password", func(t *testing.T) {
+		password := "correct horse battery staple"
+		err := validatePassword(password)
+		am.AssertErrNil(t, err)
 	})
 
 	t.Run("invalid password", func(t *testing.T) {
-		user := CreateUserRequest{
-			Username: "username",
-			Password: "aaaaaaaa",
-		}
-
-		err := user.validate()
+		password := "insecure"
+		err := validatePassword(password)
 		am.AssertErrNotNil(t, err)
 	})
 }

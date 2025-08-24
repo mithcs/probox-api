@@ -93,25 +93,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func (user *CreateUserRequest) validate() error {
-	// must start with alphabetic character
-	// may include underscore and/or number
-	// min 3 chars
-	// max 16 chars
-	r := regexp.MustCompile(`^[A-Za-z]\w{2,15}$`)
-	if !r.MatchString(user.Username) {
-		return errors.New("Invalid username.")
-	}
-
-	// if the password has enough entropy, err is nil
-	err := passValidator.Validate(user.Password, 60)
-	if err != nil {
-		return errors.New("Password is insecure.")
-	}
-
-	return nil
-}
-
 func hashPass(pass string) (string, error) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
 
@@ -136,4 +117,50 @@ func generateTokens(userId int64) (CreateUserResponse, error) {
 	}
 
 	return tokens, err
+}
+
+func (user *CreateUserRequest) validate() error {
+	if err := validateUsername(user.Username); err != nil {
+		return err
+	}
+
+	if err := validatePassword(user.Password); err != nil {
+		return errors.New("Password is insecure.")
+	}
+
+	if exists := usernameExists(user.Username); exists != false {
+		return errors.New("Username already exists.")
+	}
+
+	return nil
+}
+
+func validateUsername(username string) error {
+	// must start with alphabetic character
+	// may include underscore and/or number
+	// min 3 chars
+	// max 16 chars
+	r := regexp.MustCompile(`^[A-Za-z]\w{2,15}$`)
+	if !r.MatchString(username) {
+		return errors.New("Invalid username.")
+	}
+
+	return nil
+}
+
+func validatePassword(password string) error {
+	err := passValidator.Validate(password, 60)
+	if err != nil {
+		return errors.New("Password is insecure.")
+	}
+
+	return nil
+}
+
+func usernameExists(username string) bool {
+	if username == "exists" {
+		return true
+	}
+
+	return false
 }
