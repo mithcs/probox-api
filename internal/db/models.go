@@ -10,6 +10,12 @@ type Problem struct {
 	Description string
 }
 
+type Solution struct {
+	ID        int64
+	Problemid int64
+	Solution  string
+}
+
 type User struct {
 	ID       int64
 	Username string
