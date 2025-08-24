@@ -1,32 +1,10 @@
 package users
 
 import (
-	"encoding/json"
-	"io"
-	"strings"
 	"testing"
 
 	"github.com/mithcs/probox-api/pkg/am"
 )
-
-func TestParseBody(t *testing.T) {
-	userReq := CreateUserRequest{
-		Username: "username",
-		Password: "correct horse battery staple",
-	}
-	userReqJson, err := json.Marshal(userReq)
-	am.AssertErrNil(t, err)
-
-	bodyReader := strings.NewReader(string(userReqJson))
-	body := io.NopCloser(bodyReader)
-
-	got, err := parseBody(body)
-	am.AssertErrNil(t, err)
-
-	want := userReq
-
-	am.AssertAny(t, got, want)
-}
 
 func TestGenerateTokens(t *testing.T) {
 	userId := int64(1)

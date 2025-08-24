@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 	"regexp"
 
@@ -25,7 +24,7 @@ type CreateUserResponse struct {
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	user, err := parseBody(r.Body)
+	user, err := globals.ParseBody[CreateUserRequest](r.Body)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
@@ -111,22 +110,6 @@ func (user *CreateUserRequest) validate() error {
 	}
 
 	return nil
-}
-
-func parseBody(body io.ReadCloser) (CreateUserRequest, error) {
-	var user CreateUserRequest
-
-	readBody, err := io.ReadAll(body)
-	if err != nil {
-		return user, err
-	}
-
-	err = json.Unmarshal(readBody, &user)
-	if err != nil {
-		return user, err
-	}
-
-	return user, nil
 }
 
 func hashPass(pass string) (string, error) {
