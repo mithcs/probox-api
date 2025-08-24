@@ -1,20 +1,23 @@
 package solutions
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 )
 
 type CreateSolutionRequest struct {
-	ProblemId int    `json:"problemId"`
+	ProblemId int64  `json:"problemId"`
 	Solution  string `json:"solution"`
 }
 type CreateSolutionResponse struct {
-	Id        int    `json:"id"`
-	ProblemId int    `json:"problemId"`
+	Id        int64  `json:"id"`
+	ProblemId int64  `json:"problemId"`
 	Solution  string `json:"solution"`
 }
 
@@ -41,14 +44,21 @@ func CreateSolution(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// store solution in db
-	// and get solutionId
-	solutionId := 1
+	s, err := storeSolution(r.Context(), solution)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not store solution.",
+		})
+
+		return
+	}
 
 	solutionRes := CreateSolutionResponse{
-		Id:        solutionId,
-		ProblemId: solution.ProblemId,
-		Solution:  solution.Solution,
+		Id:        s.ID,
+		ProblemId: s.Problemid,
+		Solution:  s.Solution,
 	}
 
 	response, err := json.Marshal(solutionRes)
@@ -66,14 +76,44 @@ func CreateSolution(w http.ResponseWriter, r *http.Request) {
 }
 
 func (solution *CreateSolutionRequest) validate() error {
-	// TODO
-
-	if solution.ProblemId == 0 {
-		return errors.New("Invalid problemId.")
+	if err := validateProblemId(solution.ProblemId); err != nil {
+		return err
 	}
-	if solution.Solution == "solution" {
-		return errors.New("Invalid solution.")
+
+	if err := validateSolution(solution.Solution); err != nil {
+		return err
 	}
 
 	return nil
+}
+
+func validateProblemId(problemId int64) error {
+	// TODO
+	newVar := problemId
+	if problemId == newVar {
+		return nil
+	}
+
+	return errors.New("Invalid Problem Id.")
+}
+
+func validateSolution(solution string) error {
+	minLen := 5
+	maxLen := 20000
+
+	if len(solution) > minLen && len(solution) < maxLen {
+		return nil
+	}
+
+	fmt.Print(solution)
+
+	return errors.New("Invalid Solution.")
+}
+
+func storeSolution(ctx context.Context, solution CreateSolutionRequest) (db.Solution, error) {
+	s, err := globals.Queries.CreateSolution(ctx, db.CreateSolutionParams{
+		Problemid: solution.ProblemId,
+	})
+
+	return s, err
 }
