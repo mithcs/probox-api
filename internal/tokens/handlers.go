@@ -3,7 +3,6 @@ package tokens
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -11,6 +10,7 @@ import (
 
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/mithcs/probox-api/internal/globals"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type CreateTokensRequest struct {
@@ -40,7 +40,7 @@ func CreateTokens(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := creds.verify()
+	userId, err := creds.verify(r.Context())
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
@@ -114,18 +114,6 @@ func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func (req *CreateTokensRequest) verify() (int64, error) {
-	userId := int64(1)
-
-	// verify username and password here
-	if req.Username == "username" &&
-		req.Password == "password" {
-		return -1, errors.New("Invalid Credentials.")
-	}
-
-	return userId, nil
-}
-
 func generateTokens(userId int64) (CreateTokensResponse, error) {
 	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
 
@@ -146,4 +134,24 @@ func retrieveUserId(ctx context.Context) (int64, error) {
 	userId, err := strconv.ParseInt(fmt.Sprintf("%v", claims["uid"]), 10, 64)
 
 	return userId, err
+}
+
+func (req *CreateTokensRequest) verify(ctx context.Context) (int64, error) {
+	userId, err := verifyCredentials(ctx, req.Username, req.Password)
+
+	return userId, err
+}
+
+func verifyCredentials(ctx context.Context, username string, password string) (int64, error) {
+	user, err := globals.Queries.GetUserByUsername(ctx, username)
+	if err != nil {
+		return 0, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return 0, err
+	}
+
+	return user.ID, nil
 }
