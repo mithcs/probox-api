@@ -113,6 +113,7 @@ func validateSolution(solution string) error {
 func storeSolution(ctx context.Context, solution CreateSolutionRequest) (db.Solution, error) {
 	s, err := globals.Queries.CreateSolution(ctx, db.CreateSolutionParams{
 		Problemid: solution.ProblemId,
+		Solution:  solution.Solution,
 	})
 
 	return s, err
