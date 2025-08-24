@@ -3,7 +3,6 @@ package problems
 import (
 	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 
 	"github.com/mithcs/probox-api/internal/globals"
@@ -20,43 +19,28 @@ type CreateProblemResponse struct {
 }
 
 func CreateProblem(w http.ResponseWriter, r *http.Request) {
-	var problem CreateProblemRequest
-
-	body, err := io.ReadAll(r.Body)
+	problem, err := globals.ParseBody[CreateProblemRequest](r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not read the body",
-		)
-		w.Write(response)
-
-		return
-	}
-
-	err = json.Unmarshal(body, &problem)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		response := globals.ReturnErrorResponse(
-			"Bad Request.",
-			"Could not parse body.",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request",
+			Details: "Could not parse the body.",
+		})
 
 		return
 	}
 
 	err = problem.validate()
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		response := globals.ReturnErrorResponse(
-			"Bad Request.",
-			err.Error(),
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: err.Error(),
+		})
 
 		return
 	}
+
 	// store problem in db
 	// and get problemId
 	problemId := 1
@@ -69,12 +53,11 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 
 	response, err := json.Marshal(problemRes)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not return created problem.",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not return created problem.",
+		})
 
 		return
 	}
