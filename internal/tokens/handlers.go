@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"io"
 	"net/http"
 
 	"github.com/go-chi/jwtauth/v5"
@@ -30,7 +29,7 @@ type RefreshTokensResponse struct {
 }
 
 func CreateTokens(w http.ResponseWriter, r *http.Request) {
-	creds, err := parseBody(r.Body)
+	creds, err := globals.ParseBody[CreateTokensRequest](r.Body)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
@@ -125,22 +124,6 @@ func (req *CreateTokensRequest) verify() (int64, error) {
 	}
 
 	return userId, nil
-}
-
-func parseBody(body io.ReadCloser) (CreateTokensRequest, error) {
-	var creds CreateTokensRequest
-
-	readBody, err := io.ReadAll(body)
-	if err != nil {
-		return creds, err
-	}
-
-	err = json.Unmarshal(readBody, &creds)
-	if err != nil {
-		return creds, err
-	}
-
-	return creds, nil
 }
 
 func generateTokens(userId int64) (CreateTokensResponse, error) {
