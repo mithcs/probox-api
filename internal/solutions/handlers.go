@@ -3,7 +3,6 @@ package solutions
 import (
 	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 
 	"github.com/mithcs/probox-api/internal/globals"
@@ -20,40 +19,24 @@ type CreateSolutionResponse struct {
 }
 
 func CreateSolution(w http.ResponseWriter, r *http.Request) {
-	var solution CreateSolutionRequest
-
-	body, err := io.ReadAll(r.Body)
+	solution, err := globals.ParseBody[CreateSolutionRequest](r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not read the body",
-		)
-		w.Write(response)
-
-		return
-	}
-
-	err = json.Unmarshal(body, &solution)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		response := globals.ReturnErrorResponse(
-			"Bad Request.",
-			"Could not parse body.",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: "Could not parse body.",
+		})
 
 		return
 	}
 
 	err = solution.validate()
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		response := globals.ReturnErrorResponse(
-			"Bad Request.",
-			err.Error(),
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: err.Error(),
+		})
 
 		return
 	}
@@ -70,12 +53,11 @@ func CreateSolution(w http.ResponseWriter, r *http.Request) {
 
 	response, err := json.Marshal(solutionRes)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		response := globals.ReturnErrorResponse(
-			"Server Error.",
-			"Could not return created problem.",
-		)
-		w.Write(response)
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not return created problem.",
+		})
 
 		return
 	}
