@@ -43,11 +43,21 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	problemId, err := storeProblem(r.Context(), problem)
+	p, err := storeProblem(r.Context(), problem)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not store problem.",
+		})
+
+		return
+	}
+
 	problemRes := CreateProblemResponse{
-		Id:          problemId,
-		Title:       problem.Title,
-		Description: problem.Description,
+		Id:          p.ID,
+		Title:       p.Title,
+		Description: p.Description,
 	}
 
 	response, err := json.Marshal(problemRes)
@@ -64,13 +74,13 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func storeProblem(ctx context.Context, problem CreateProblemRequest) (int64, error) {
-	problemId, err := globals.Queries.CreateProblem(ctx, db.CreateProblemParams{
+func storeProblem(ctx context.Context, problem CreateProblemRequest) (db.Problem, error) {
+	p, err := globals.Queries.CreateProblem(ctx, db.CreateProblemParams{
 		Title:       problem.Title,
 		Description: problem.Description,
 	})
 
-	return problemId, err
+	return p, err
 }
 
 func (problem *CreateProblemRequest) validate() error {
