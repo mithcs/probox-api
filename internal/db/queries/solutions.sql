@@ -5,3 +5,6 @@ INSERT INTO solutions (
     $1, $2
 )
 RETURNING *;
+
+-- name: GetSolutions :many
+SELECT id, problemId, solution FROM solutions;

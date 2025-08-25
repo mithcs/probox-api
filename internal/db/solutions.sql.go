@@ -29,3 +29,30 @@ func (q *Queries) CreateSolution(ctx context.Context, arg CreateSolutionParams) 
 	err := row.Scan(&i.ID, &i.Problemid, &i.Solution)
 	return i, err
 }
+
+const getSolutions = `-- name: GetSolutions :many
+SELECT id, problemId, solution FROM solutions
+`
+
+func (q *Queries) GetSolutions(ctx context.Context) ([]Solution, error) {
+	rows, err := q.db.QueryContext(ctx, getSolutions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Solution
+	for rows.Next() {
+		var i Solution
+		if err := rows.Scan(&i.ID, &i.Problemid, &i.Solution); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
