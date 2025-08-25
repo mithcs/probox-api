@@ -41,3 +41,35 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 	err := row.Scan(&i.ID, &i.Username, &i.Password)
 	return i, err
 }
+
+const getUsers = `-- name: GetUsers :many
+SELECT id, username FROM users
+`
+
+type GetUsersRow struct {
+	ID       int64
+	Username string
+}
+
+func (q *Queries) GetUsers(ctx context.Context) ([]GetUsersRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUsersRow
+	for rows.Next() {
+		var i GetUsersRow
+		if err := rows.Scan(&i.ID, &i.Username); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
