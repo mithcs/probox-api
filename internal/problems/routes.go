@@ -7,6 +7,8 @@ import (
 )
 
 func SetupProblems(router *chi.Mux) {
+	router.Get("/problems", GetProblems)
+
 	router.
 		With(jwtauth.Verifier(globals.AccessTokenAuth)).
 		With(globals.AuthenticatorMiddleware(globals.AccessTokenAuth)).
