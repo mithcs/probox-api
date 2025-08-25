@@ -11,6 +11,12 @@ import (
 	"github.com/mithcs/probox-api/internal/globals"
 )
 
+type GetSolutionsResponse struct {
+	Id        int64  `json:"id"`
+	ProblemId int64  `json:"problemId"`
+	Solution  string `json:"solution"`
+}
+
 type CreateSolutionRequest struct {
 	ProblemId int64  `json:"problemId"`
 	Solution  string `json:"solution"`
@@ -19,6 +25,56 @@ type CreateSolutionResponse struct {
 	Id        int64  `json:"id"`
 	ProblemId int64  `json:"problemId"`
 	Solution  string `json:"solution"`
+}
+
+func GetSolutions(w http.ResponseWriter, r *http.Request) {
+	solutions, err := getAllSolutions(r.Context())
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not get all solutions.",
+		})
+
+		return
+	}
+
+	response, err := json.Marshal(solutions)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not list all solutions.",
+		})
+
+		return
+	}
+
+	w.Write(response)
+}
+
+func getAllSolutions(ctx context.Context) ([]GetSolutionsResponse, error) {
+	solutionRows, err := getSolutionsFromDb(ctx)
+	if err != nil {
+		return []GetSolutionsResponse{}, err
+	}
+
+	var solutions []GetSolutionsResponse
+	for _, solutionRow := range solutionRows {
+		solutions = append(solutions, GetSolutionsResponse{
+			Id:        solutionRow.ID,
+			ProblemId: solutionRow.Problemid,
+			Solution:  solutionRow.Solution,
+		})
+	}
+
+	return solutions, nil
+}
+
+func getSolutionsFromDb(ctx context.Context) ([]db.Solution, error) {
+	solutionRows, err := globals.Queries.GetSolutions(ctx)
+
+	return solutionRows, err
 }
 
 func CreateSolution(w http.ResponseWriter, r *http.Request) {
