@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
@@ -13,6 +14,12 @@ import (
 type GetSolutionsResponse struct {
 	Id          int64  `json:"id"`
 	ProblemId   int64  `json:"problemId"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
+type GetSolutionsForProblemResponse struct {
+	Id          int64  `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
@@ -30,6 +37,11 @@ type CreateSolutionResponse struct {
 }
 
 func GetSolutions(w http.ResponseWriter, r *http.Request) {
+	if problemId := r.URL.Query().Get("problemId"); problemId != "" {
+		GetSolutionsForProblem(w, r, problemId)
+		return
+	}
+
 	solutions, err := getAllSolutions(r.Context())
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
@@ -76,6 +88,67 @@ func getAllSolutions(ctx context.Context) ([]GetSolutionsResponse, error) {
 
 func getSolutionsFromDb(ctx context.Context) ([]db.Solution, error) {
 	solutionRows, err := globals.Queries.GetSolutions(ctx)
+
+	return solutionRows, err
+}
+
+func GetSolutionsForProblem(w http.ResponseWriter, r *http.Request, problemId string) {
+	pid, err := strconv.ParseInt(problemId, 10, 64)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: "Invalid Problem Id.",
+		})
+
+		return
+	}
+
+	solutions, err := getSolutionsByProblemId(r.Context(), pid)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: err.Error(),
+		})
+
+		return
+	}
+
+	response, err := json.Marshal(solutions)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not list all solutions.",
+		})
+
+		return
+	}
+
+	w.Write(response)
+}
+
+func getSolutionsByProblemId(ctx context.Context, problemId int64) ([]GetSolutionsForProblemResponse, error) {
+	solutionRows, err := getSolutionsByProblemIdFromDb(ctx, problemId)
+	if err != nil {
+		return []GetSolutionsForProblemResponse{}, err
+	}
+
+	var solutions []GetSolutionsForProblemResponse
+	for _, solutionRow := range solutionRows {
+		solutions = append(solutions, GetSolutionsForProblemResponse{
+			Id:          solutionRow.ID,
+			Title:       solutionRow.Title,
+			Description: solutionRow.Description,
+		})
+	}
+
+	return solutions, nil
+}
+
+func getSolutionsByProblemIdFromDb(ctx context.Context, problemId int64) ([]db.Solution, error) {
+	solutionRows, err := globals.Queries.GetSolutionsByProblemId(ctx, problemId)
 
 	return solutionRows, err
 }

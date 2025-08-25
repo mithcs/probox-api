@@ -9,6 +9,8 @@ import (
 func SetupSolutions(router *chi.Mux) {
 	router.Get("/solutions", GetSolutions)
 
+	// GetSolutionsForProblem() handler is called conditionally from GetSolutions
+
 	router.
 		With(jwtauth.Verifier(globals.AccessTokenAuth)).
 		With(globals.AuthenticatorMiddleware(globals.AccessTokenAuth)).
