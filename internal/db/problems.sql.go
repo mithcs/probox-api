@@ -41,3 +41,30 @@ func (q *Queries) GetProblemById(ctx context.Context, id int64) (Problem, error)
 	err := row.Scan(&i.ID, &i.Title, &i.Description)
 	return i, err
 }
+
+const getProblems = `-- name: GetProblems :many
+SELECT id, title, description FROM problems
+`
+
+func (q *Queries) GetProblems(ctx context.Context) ([]Problem, error) {
+	rows, err := q.db.QueryContext(ctx, getProblems)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Problem
+	for rows.Next() {
+		var i Problem
+		if err := rows.Scan(&i.ID, &i.Title, &i.Description); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
