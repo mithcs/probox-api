@@ -67,3 +67,36 @@ func (q *Queries) GetSolutions(ctx context.Context) ([]Solution, error) {
 	}
 	return items, nil
 }
+
+const getSolutionsByProblemId = `-- name: GetSolutionsByProblemId :many
+SELECT id, problemId, title, description FROM solutions
+WHERE problemId = $1
+`
+
+func (q *Queries) GetSolutionsByProblemId(ctx context.Context, problemid int64) ([]Solution, error) {
+	rows, err := q.db.QueryContext(ctx, getSolutionsByProblemId, problemid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Solution
+	for rows.Next() {
+		var i Solution
+		if err := rows.Scan(
+			&i.ID,
+			&i.Problemid,
+			&i.Title,
+			&i.Description,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
