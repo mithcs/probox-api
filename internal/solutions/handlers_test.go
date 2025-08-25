@@ -6,18 +6,34 @@ import (
 	"github.com/mithcs/probox-api/pkg/am"
 )
 
-func TestValidateSolution(t *testing.T) {
-	t.Run("valid solution", func(t *testing.T) {
-		solution := "a valid solution"
+func TestValidateTitle(t *testing.T) {
+	t.Run("valid title", func(t *testing.T) {
+		title := "a valid title"
 
-		err := validateSolution(solution)
+		err := validateTitle(title)
 		am.AssertErrNil(t, err)
 	})
 
-	t.Run("invalid solution", func(t *testing.T) {
-		solution := "no"
+	t.Run("invalid title", func(t *testing.T) {
+		title := "no"
 
-		err := validateSolution(solution)
+		err := validateTitle(title)
+		am.AssertErrNotNil(t, err)
+	})
+}
+
+func TestValidateDescription(t *testing.T) {
+	t.Run("valid description", func(t *testing.T) {
+		description := "a valid description"
+
+		err := validateDescription(description)
+		am.AssertErrNil(t, err)
+	})
+
+	t.Run("invalid description", func(t *testing.T) {
+		description := "no"
+
+		err := validateDescription(description)
 		am.AssertErrNotNil(t, err)
 	})
 }
