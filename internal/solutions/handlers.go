@@ -33,7 +33,7 @@ func CreateSolution(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = solution.validate()
+	err = solution.validate(r.Context())
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
@@ -75,8 +75,8 @@ func CreateSolution(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func (solution *CreateSolutionRequest) validate() error {
-	if err := validateProblemId(solution.ProblemId); err != nil {
+func (solution *CreateSolutionRequest) validate(ctx context.Context) error {
+	if err := validateProblemId(ctx, solution.ProblemId); err != nil {
 		return err
 	}
 
@@ -87,14 +87,13 @@ func (solution *CreateSolutionRequest) validate() error {
 	return nil
 }
 
-func validateProblemId(problemId int64) error {
-	// TODO
-	newVar := problemId
-	if problemId == newVar {
-		return nil
+func validateProblemId(ctx context.Context, problemId int64) error {
+	problem, _ := globals.Queries.GetProblemById(ctx, problemId)
+	if problem.ID == 0 || problem.Title == "" || problem.Description == "" {
+		return errors.New("Invalid Problem Id.")
 	}
 
-	return errors.New("Invalid Problem Id.")
+	return nil
 }
 
 func validateSolution(solution string) error {
