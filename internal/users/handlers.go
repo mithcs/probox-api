@@ -13,6 +13,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type GetUsersResponse struct {
+	Id       int64  `json:"id"`
+	Username string `json:"username"`
+}
+
 type CreateUserRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -21,6 +26,55 @@ type CreateUserRequest struct {
 type CreateUserResponse struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
+}
+
+func GetUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := getAllUsers(r.Context())
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not get all users.",
+		})
+
+		return
+	}
+
+	response, err := json.Marshal(users)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not list all users.",
+		})
+
+		return
+	}
+
+	w.Write(response)
+}
+
+func getAllUsers(ctx context.Context) ([]GetUsersResponse, error) {
+	userRows, err := getUsersFromDb(ctx)
+	if err != nil {
+		return []GetUsersResponse{}, err
+	}
+
+	var users []GetUsersResponse
+	for _, userRow := range userRows {
+		users = append(users, GetUsersResponse{
+			Id:       userRow.ID,
+			Username: userRow.Username,
+		})
+	}
+
+	return users, nil
+}
+
+func getUsersFromDb(ctx context.Context) ([]db.GetUsersRow, error) {
+	userRows, err := globals.Queries.GetUsers(ctx)
+
+	return userRows, err
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
