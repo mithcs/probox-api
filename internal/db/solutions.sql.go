@@ -11,27 +11,33 @@ import (
 
 const createSolution = `-- name: CreateSolution :one
 INSERT INTO solutions (
-    problemId, solution
+    problemId, title, description
 ) VALUES (
-    $1, $2
+    $1, $2, $3
 )
-RETURNING id, problemid, solution
+RETURNING id, problemid, title, description
 `
 
 type CreateSolutionParams struct {
-	Problemid int64
-	Solution  string
+	Problemid   int64
+	Title       string
+	Description string
 }
 
 func (q *Queries) CreateSolution(ctx context.Context, arg CreateSolutionParams) (Solution, error) {
-	row := q.db.QueryRowContext(ctx, createSolution, arg.Problemid, arg.Solution)
+	row := q.db.QueryRowContext(ctx, createSolution, arg.Problemid, arg.Title, arg.Description)
 	var i Solution
-	err := row.Scan(&i.ID, &i.Problemid, &i.Solution)
+	err := row.Scan(
+		&i.ID,
+		&i.Problemid,
+		&i.Title,
+		&i.Description,
+	)
 	return i, err
 }
 
 const getSolutions = `-- name: GetSolutions :many
-SELECT id, problemId, solution FROM solutions
+SELECT id, problemId, title, description FROM solutions
 `
 
 func (q *Queries) GetSolutions(ctx context.Context) ([]Solution, error) {
@@ -43,7 +49,12 @@ func (q *Queries) GetSolutions(ctx context.Context) ([]Solution, error) {
 	var items []Solution
 	for rows.Next() {
 		var i Solution
-		if err := rows.Scan(&i.ID, &i.Problemid, &i.Solution); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Problemid,
+			&i.Title,
+			&i.Description,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

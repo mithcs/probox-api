@@ -11,9 +11,10 @@ type Problem struct {
 }
 
 type Solution struct {
-	ID        int64
-	Problemid int64
-	Solution  string
+	ID          int64
+	Problemid   int64
+	Title       string
+	Description string
 }
 
 type User struct {

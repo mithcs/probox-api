@@ -1,10 +1,10 @@
 -- name: CreateSolution :one
 INSERT INTO solutions (
-    problemId, solution
+    problemId, title, description
 ) VALUES (
-    $1, $2
+    $1, $2, $3
 )
 RETURNING *;
 
 -- name: GetSolutions :many
-SELECT id, problemId, solution FROM solutions;
+SELECT id, problemId, title, description FROM solutions;
