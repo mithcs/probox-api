@@ -145,7 +145,7 @@ func (req *CreateTokensRequest) verify(ctx context.Context) (int64, error) {
 }
 
 func verifyCredentials(ctx context.Context, username string, password string) (int64, error) {
-	user, err := globals.Queries.GetUserByUsername(ctx, username)
+	user, err := globals.Queries.GetCredentialsByUsername(ctx, username)
 	if err == sql.ErrNoRows {
 		return 0, errors.New("Incorrect Username.")
 	}
