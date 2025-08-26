@@ -115,6 +115,16 @@ func GetSolutionsForProblem(w http.ResponseWriter, r *http.Request, problemId st
 		return
 	}
 
+	if len(solutions) == 0 {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusNoContent,
+			Title:   "No Content.",
+			Details: "There are no solutions to list.",
+		})
+
+		return
+	}
+
 	response, err := json.Marshal(solutions)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
