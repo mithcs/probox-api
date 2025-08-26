@@ -10,8 +10,8 @@ func TestNew(t *testing.T) {
 	ctx := t.Context()
 	addr := ":8080"
 	db := Database{
-		Driver: "sqlite3",
-		DSN:    ":memory:",
+		Driver: "",
+		DSN:    "",
 	}
 	router := chi.NewRouter()
 
@@ -33,5 +33,3 @@ func TestNew(t *testing.T) {
 		t.Errorf("router is not same, expected to be same")
 	}
 }
-
-// idk how to test Run() method

@@ -150,8 +150,7 @@ func verifyCredentials(ctx context.Context, username string, password string) (i
 		return 0, errors.New("Incorrect username.")
 	}
 	if err != nil {
-		// TODO: Give meaningful error message
-		return 0, errors.New("TODO")
+		return 0, errors.New("Invalid credentials.")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))

@@ -9,7 +9,7 @@ import (
 
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
-	passValidator "github.com/wagslane/go-password-validator"
+	validator "github.com/wagslane/go-password-validator"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -203,7 +203,7 @@ func validateUsername(username string) error {
 }
 
 func validatePassword(password string) error {
-	err := passValidator.Validate(password, 60)
+	err := validator.Validate(password, 60)
 	if err != nil {
 		return errors.New("Password is insecure.")
 	}

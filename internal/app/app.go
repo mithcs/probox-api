@@ -47,11 +47,6 @@ func (app *App) Run() error {
 
 	globals.Queries = db.New(conn)
 
-	// err = conn.Ping()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
 	registerRoutes(app.router)
 
 	return http.ListenAndServe(app.addr, app.router)

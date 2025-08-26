@@ -20,6 +20,7 @@ type CreateProblemRequest struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
+
 type CreateProblemResponse struct {
 	Id          int64  `json:"id"`
 	Title       string `json:"title"`
@@ -75,6 +76,7 @@ func getProblemsFromDb(ctx context.Context) ([]db.Problem, error) {
 
 	return problemRows, err
 }
+
 func CreateProblem(w http.ResponseWriter, r *http.Request) {
 	problem, err := globals.ParseBody[CreateProblemRequest](r.Body)
 	if err != nil {
