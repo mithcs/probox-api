@@ -2,6 +2,7 @@ package globals
 
 import (
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/go-chi/jwtauth/v5"
@@ -12,12 +13,12 @@ var RefreshTokenAuth *jwtauth.JWTAuth
 
 func init() {
 	atAlg := "HS256"
-	atSignKey := []byte("a-string-secret-256-bits-long-boom")
-	AccessTokenAuth = jwtauth.New(atAlg, atSignKey, nil)
+	atSignKey := os.Getenv("ACCESS_TOKEN_SECRET")
+	AccessTokenAuth = jwtauth.New(atAlg, []byte(atSignKey), nil)
 
 	rtAlg := "HS256"
-	rtSignKey := []byte("b-string-secret-256-bits-long-boom")
-	RefreshTokenAuth = jwtauth.New(rtAlg, rtSignKey, nil)
+	rtSignKey := os.Getenv("REFRESH_TOKEN_SECRET")
+	RefreshTokenAuth = jwtauth.New(rtAlg, []byte(rtSignKey), nil)
 }
 
 func GenerateAccessToken(userId int64) (string, error) {
