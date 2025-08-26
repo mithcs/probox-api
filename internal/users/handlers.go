@@ -16,11 +16,13 @@ import (
 type GetUsersResponse struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
+	FullName string `json:"full_name"`
 }
 
 type CreateUserRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	FullName string `json:"full_name"`
 }
 
 type CreateUserResponse struct {
@@ -65,6 +67,7 @@ func getAllUsers(ctx context.Context) ([]GetUsersResponse, error) {
 		users = append(users, GetUsersResponse{
 			ID:       userRow.ID,
 			Username: userRow.Username,
+			FullName: userRow.FullName,
 		})
 	}
 
@@ -111,7 +114,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := storeUser(r.Context(), user.Username, hashedPass)
+	userID, err := storeUser(r.Context(), user.Username, hashedPass, user.FullName)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusInternalServerError,
@@ -153,10 +156,11 @@ func hashPass(pass string) (string, error) {
 	return string(hashed), err
 }
 
-func storeUser(ctx context.Context, username string, password string) (int64, error) {
+func storeUser(ctx context.Context, username string, password string, fullname string) (int64, error) {
 	userID, err := globals.Queries.CreateUser(ctx, db.CreateUserParams{
 		Username: username,
 		Password: password,
+		FullName: fullname,
 	})
 
 	return userID, err
@@ -179,7 +183,11 @@ func (user *CreateUserRequest) validate(ctx context.Context) error {
 	}
 
 	if err := validatePassword(user.Password); err != nil {
-		return errors.New("Password is insecure.")
+		return err
+	}
+
+	if err := validateFullName(user.FullName); err != nil {
+		return err
 	}
 
 	if exists := usernameExists(ctx, user.Username); exists {
@@ -194,7 +202,7 @@ func validateUsername(username string) error {
 	// may include underscore and/or number
 	// min 3 chars
 	// max 16 chars
-	r := regexp.MustCompile(`^[A-Za-z]\w{2,15}$`)
+	r := regexp.MustCompile(`^[A-Za-z]\w{1,14}\w$`)
 	if !r.MatchString(username) {
 		return errors.New("Invalid Username.")
 	}
@@ -211,9 +219,22 @@ func validatePassword(password string) error {
 	return nil
 }
 
+func validateFullName(fullname string) error {
+	// must start and end with alphabet
+	// may include space
+	// min 3 chars
+	// max 24 chars
+	r := regexp.MustCompile(`^[A-Za-z][A-Za-z ]{1,22}[A-Za-z]$`)
+	if !r.MatchString(fullname) {
+		return errors.New("Invalid Username.")
+	}
+
+	return nil
+}
+
 func usernameExists(ctx context.Context, username string) bool {
 	user, _ := globals.Queries.GetUserByUsername(ctx, username)
-	if user.ID == 0 || user.Username == "" || user.Password == "" {
+	if user.ID == 0 || user.Username == "" || user.FullName == "" {
 		return false
 	}
 
