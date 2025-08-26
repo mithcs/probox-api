@@ -21,38 +21,6 @@ func init() {
 	RefreshTokenAuth = jwtauth.New(rtAlg, []byte(rtSignKey), nil)
 }
 
-func GenerateAccessToken(userId int64) (string, error) {
-	claims := map[string]any{
-		"uid": userId,
-	}
-
-	jwtauth.SetIssuedNow(claims)
-	jwtauth.SetExpiryIn(claims, 10*time.Minute)
-
-	_, accessToken, err := AccessTokenAuth.Encode(claims)
-	if err != nil {
-		return "", err
-	}
-
-	return accessToken, nil
-}
-
-func GenerateRefreshToken(userId int64) (string, error) {
-	claims := map[string]any{
-		"uid": 1,
-	}
-
-	jwtauth.SetIssuedNow(claims)
-	jwtauth.SetExpiryIn(claims, 24*time.Hour)
-
-	_, refreshToken, err := RefreshTokenAuth.Encode(claims)
-	if err != nil {
-		return "", err
-	}
-
-	return refreshToken, nil
-}
-
 func GenerateAccessAndRefreshTokens(userId int64) (string, string, error) {
 	accessToken, err := GenerateAccessToken(userId)
 	if err != nil {
@@ -65,6 +33,34 @@ func GenerateAccessAndRefreshTokens(userId int64) (string, string, error) {
 	}
 
 	return accessToken, refreshToken, err
+}
+
+func GenerateAccessToken(userId int64) (string, error) {
+	accessToken, err := generateToken(userId, AccessTokenAuth)
+
+	return accessToken, err
+}
+
+func GenerateRefreshToken(userId int64) (string, error) {
+	refreshToken, err := generateToken(userId, RefreshTokenAuth)
+
+	return refreshToken, err
+}
+
+func generateToken(userId int64, auth *jwtauth.JWTAuth) (string, error) {
+	claims := map[string]any{
+		"uid": userId,
+	}
+
+	jwtauth.SetIssuedNow(claims)
+	jwtauth.SetExpiryIn(claims, 24*time.Hour)
+
+	_, token, err := auth.Encode(claims)
+	if err != nil {
+		return "", err
+	}
+
+	return token, err
 }
 
 func AuthenticatorMiddleware(ja *jwtauth.JWTAuth) func(http.Handler) http.Handler {
