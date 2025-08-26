@@ -7,6 +7,7 @@ import (
 )
 
 func SetupSolutions(router *chi.Mux) {
+	router.Get("/solutions/{solutionId}", GetSolution)
 	router.Get("/solutions", GetSolutions)
 
 	// GetSolutionsForProblem() handler is called conditionally from GetSolutions

@@ -7,11 +7,12 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 )
 
-type GetSolutionsResponse struct {
+type GetSolutionResponse struct {
 	Id          int64  `json:"id"`
 	ProblemId   int64  `json:"problemId"`
 	Title       string `json:"title"`
@@ -29,11 +30,68 @@ type CreateSolutionRequest struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
+
 type CreateSolutionResponse struct {
 	Id          int64  `json:"id"`
 	ProblemId   int64  `json:"problemId"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
+}
+
+func GetSolution(w http.ResponseWriter, r *http.Request) {
+	solutionId, err := strconv.ParseInt(chi.URLParam(r, "solutionId"), 10, 64)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: "Invalid solution id.",
+		})
+
+		return
+	}
+
+	solution, err := getSolutionById(r.Context(), solutionId)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not get solution.",
+		})
+
+		return
+	}
+
+	response, err := json.Marshal(solution)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not list solution.",
+		})
+
+		return
+	}
+
+	w.Write(response)
+}
+
+func getSolutionById(ctx context.Context, solutionId int64) (GetSolutionResponse, error) {
+	p, err := getSolutionByIdFromDb(ctx, solutionId)
+
+	solution := GetSolutionResponse{
+		Id:          p.ID,
+		ProblemId:   p.Problemid,
+		Title:       p.Title,
+		Description: p.Description,
+	}
+
+	return solution, err
+}
+
+func getSolutionByIdFromDb(ctx context.Context, solutionId int64) (db.Solution, error) {
+	solution, err := globals.Queries.GetSolutionById(ctx, solutionId)
+
+	return solution, err
 }
 
 func GetSolutions(w http.ResponseWriter, r *http.Request) {
@@ -67,15 +125,15 @@ func GetSolutions(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func getAllSolutions(ctx context.Context) ([]GetSolutionsResponse, error) {
+func getAllSolutions(ctx context.Context) ([]GetSolutionResponse, error) {
 	solutionRows, err := getSolutionsFromDb(ctx)
 	if err != nil {
-		return []GetSolutionsResponse{}, err
+		return []GetSolutionResponse{}, err
 	}
 
-	var solutions []GetSolutionsResponse
+	var solutions []GetSolutionResponse
 	for _, solutionRow := range solutionRows {
-		solutions = append(solutions, GetSolutionsResponse{
+		solutions = append(solutions, GetSolutionResponse{
 			Id:          solutionRow.ID,
 			ProblemId:   solutionRow.Problemid,
 			Title:       solutionRow.Title,
