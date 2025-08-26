@@ -11,9 +11,9 @@ import (
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-    username, password
+    username, password, full_name
 ) VALUES (
-    $1, $2
+    $1, $2, $3
 )
 RETURNING id
 `
@@ -21,34 +21,60 @@ RETURNING id
 type CreateUserParams struct {
 	Username string
 	Password string
+	FullName string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.Password)
+	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.Password, arg.FullName)
 	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
 
-const getUserByUsername = `-- name: GetUserByUsername :one
+const getCredentialsByUsername = `-- name: GetCredentialsByUsername :one
 SELECT id, username, password FROM users
 WHERE username = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
-	var i User
+type GetCredentialsByUsernameRow struct {
+	ID       int64
+	Username string
+	Password string
+}
+
+func (q *Queries) GetCredentialsByUsername(ctx context.Context, username string) (GetCredentialsByUsernameRow, error) {
+	row := q.db.QueryRowContext(ctx, getCredentialsByUsername, username)
+	var i GetCredentialsByUsernameRow
 	err := row.Scan(&i.ID, &i.Username, &i.Password)
 	return i, err
 }
 
+const getUserByUsername = `-- name: GetUserByUsername :one
+SELECT id, username, full_name FROM users
+WHERE username = $1 LIMIT 1
+`
+
+type GetUserByUsernameRow struct {
+	ID       int64
+	Username string
+	FullName string
+}
+
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
+	var i GetUserByUsernameRow
+	err := row.Scan(&i.ID, &i.Username, &i.FullName)
+	return i, err
+}
+
 const getUsers = `-- name: GetUsers :many
-SELECT id, username FROM users
+SELECT id, username, full_name FROM users
 `
 
 type GetUsersRow struct {
 	ID       int64
 	Username string
+	FullName string
 }
 
 func (q *Queries) GetUsers(ctx context.Context) ([]GetUsersRow, error) {
@@ -60,7 +86,7 @@ func (q *Queries) GetUsers(ctx context.Context) ([]GetUsersRow, error) {
 	var items []GetUsersRow
 	for rows.Next() {
 		var i GetUsersRow
-		if err := rows.Scan(&i.ID, &i.Username); err != nil {
+		if err := rows.Scan(&i.ID, &i.Username, &i.FullName); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
