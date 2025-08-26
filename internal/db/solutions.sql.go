@@ -36,6 +36,23 @@ func (q *Queries) CreateSolution(ctx context.Context, arg CreateSolutionParams) 
 	return i, err
 }
 
+const getSolutionById = `-- name: GetSolutionById :one
+SELECT id, problemId, title, description FROM solutions
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetSolutionById(ctx context.Context, id int64) (Solution, error) {
+	row := q.db.QueryRowContext(ctx, getSolutionById, id)
+	var i Solution
+	err := row.Scan(
+		&i.ID,
+		&i.Problemid,
+		&i.Title,
+		&i.Description,
+	)
+	return i, err
+}
+
 const getSolutions = `-- name: GetSolutions :many
 SELECT id, problemId, title, description FROM solutions
 `
