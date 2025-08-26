@@ -11,42 +11,42 @@ import (
 
 const createSolution = `-- name: CreateSolution :one
 INSERT INTO solutions (
-    problemId, title, description
+    problem_id, title, description
 ) VALUES (
     $1, $2, $3
 )
-RETURNING id, problemid, title, description
+RETURNING id, problem_id, title, description
 `
 
 type CreateSolutionParams struct {
-	Problemid   int64
+	ProblemID   int64
 	Title       string
 	Description string
 }
 
 func (q *Queries) CreateSolution(ctx context.Context, arg CreateSolutionParams) (Solution, error) {
-	row := q.db.QueryRowContext(ctx, createSolution, arg.Problemid, arg.Title, arg.Description)
+	row := q.db.QueryRowContext(ctx, createSolution, arg.ProblemID, arg.Title, arg.Description)
 	var i Solution
 	err := row.Scan(
 		&i.ID,
-		&i.Problemid,
+		&i.ProblemID,
 		&i.Title,
 		&i.Description,
 	)
 	return i, err
 }
 
-const getSolutionById = `-- name: GetSolutionById :one
-SELECT id, problemId, title, description FROM solutions
+const getSolutionByID = `-- name: GetSolutionByID :one
+SELECT id, problem_id, title, description FROM solutions
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetSolutionById(ctx context.Context, id int64) (Solution, error) {
-	row := q.db.QueryRowContext(ctx, getSolutionById, id)
+func (q *Queries) GetSolutionByID(ctx context.Context, id int64) (Solution, error) {
+	row := q.db.QueryRowContext(ctx, getSolutionByID, id)
 	var i Solution
 	err := row.Scan(
 		&i.ID,
-		&i.Problemid,
+		&i.ProblemID,
 		&i.Title,
 		&i.Description,
 	)
@@ -54,7 +54,7 @@ func (q *Queries) GetSolutionById(ctx context.Context, id int64) (Solution, erro
 }
 
 const getSolutions = `-- name: GetSolutions :many
-SELECT id, problemId, title, description FROM solutions
+SELECT id, problem_id, title, description FROM solutions
 `
 
 func (q *Queries) GetSolutions(ctx context.Context) ([]Solution, error) {
@@ -68,7 +68,7 @@ func (q *Queries) GetSolutions(ctx context.Context) ([]Solution, error) {
 		var i Solution
 		if err := rows.Scan(
 			&i.ID,
-			&i.Problemid,
+			&i.ProblemID,
 			&i.Title,
 			&i.Description,
 		); err != nil {
@@ -85,13 +85,13 @@ func (q *Queries) GetSolutions(ctx context.Context) ([]Solution, error) {
 	return items, nil
 }
 
-const getSolutionsByProblemId = `-- name: GetSolutionsByProblemId :many
-SELECT id, problemId, title, description FROM solutions
-WHERE problemId = $1
+const getSolutionsByProblemID = `-- name: GetSolutionsByProblemID :many
+SELECT id, problem_id, title, description FROM solutions
+WHERE problem_id = $1
 `
 
-func (q *Queries) GetSolutionsByProblemId(ctx context.Context, problemid int64) ([]Solution, error) {
-	rows, err := q.db.QueryContext(ctx, getSolutionsByProblemId, problemid)
+func (q *Queries) GetSolutionsByProblemID(ctx context.Context, problemID int64) ([]Solution, error) {
+	rows, err := q.db.QueryContext(ctx, getSolutionsByProblemID, problemID)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (q *Queries) GetSolutionsByProblemId(ctx context.Context, problemid int64) 
 		var i Solution
 		if err := rows.Scan(
 			&i.ID,
-			&i.Problemid,
+			&i.ProblemID,
 			&i.Title,
 			&i.Description,
 		); err != nil {

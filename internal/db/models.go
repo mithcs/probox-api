@@ -12,7 +12,7 @@ type Problem struct {
 
 type Solution struct {
 	ID          int64
-	Problemid   int64
+	ProblemID   int64
 	Title       string
 	Description string
 }

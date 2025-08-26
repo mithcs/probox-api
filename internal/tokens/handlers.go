@@ -21,13 +21,13 @@ type CreateTokensRequest struct {
 }
 
 type CreateTokensResponse struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 type RefreshTokensResponse struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 func CreateTokens(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,7 @@ func CreateTokens(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := creds.verify(r.Context())
+	userID, err := creds.verify(r.Context())
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
@@ -53,7 +53,7 @@ func CreateTokens(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokens, err := generateTokens(userId)
+	tokens, err := generateTokens(userID)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusInternalServerError,
@@ -79,7 +79,7 @@ func CreateTokens(w http.ResponseWriter, r *http.Request) {
 }
 
 func RefreshTokens(w http.ResponseWriter, r *http.Request) {
-	userId, err := retrieveUserId(r.Context())
+	userID, err := retrieveUserID(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		globals.WriteErrorResponse(w, globals.Error{
@@ -91,7 +91,7 @@ func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokens, err := generateTokens(userId)
+	tokens, err := generateTokens(userID)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusInternalServerError,
@@ -116,8 +116,8 @@ func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func generateTokens(userId int64) (CreateTokensResponse, error) {
-	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
+func generateTokens(userID int64) (CreateTokensResponse, error) {
+	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userID)
 
 	tokens := CreateTokensResponse{
 		AccessToken:  accessToken,
@@ -127,35 +127,35 @@ func generateTokens(userId int64) (CreateTokensResponse, error) {
 	return tokens, err
 }
 
-func retrieveUserId(ctx context.Context) (int64, error) {
+func retrieveUserID(ctx context.Context) (int64, error) {
 	_, claims, err := jwtauth.FromContext(ctx)
 	if err != nil {
 		return 0, err
 	}
 
-	userId, err := strconv.ParseInt(fmt.Sprintf("%v", claims["uid"]), 10, 64)
+	userID, err := strconv.ParseInt(fmt.Sprintf("%v", claims["uid"]), 10, 64)
 
-	return userId, err
+	return userID, err
 }
 
 func (req *CreateTokensRequest) verify(ctx context.Context) (int64, error) {
-	userId, err := verifyCredentials(ctx, req.Username, req.Password)
+	userID, err := verifyCredentials(ctx, req.Username, req.Password)
 
-	return userId, err
+	return userID, err
 }
 
 func verifyCredentials(ctx context.Context, username string, password string) (int64, error) {
 	user, err := globals.Queries.GetUserByUsername(ctx, username)
 	if err == sql.ErrNoRows {
-		return 0, errors.New("Incorrect username.")
+		return 0, errors.New("Incorrect Username.")
 	}
 	if err != nil {
-		return 0, errors.New("Invalid credentials.")
+		return 0, errors.New("Invalid Credentials.")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return 0, errors.New("Incorrect password.")
+		return 0, errors.New("Incorrect Password.")
 	}
 
 	return user.ID, nil

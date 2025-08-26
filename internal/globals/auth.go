@@ -21,13 +21,13 @@ func init() {
 	RefreshTokenAuth = jwtauth.New(rtAlg, []byte(rtSignKey), nil)
 }
 
-func GenerateAccessAndRefreshTokens(userId int64) (string, string, error) {
-	accessToken, err := GenerateAccessToken(userId)
+func GenerateAccessAndRefreshTokens(userID int64) (string, string, error) {
+	accessToken, err := GenerateAccessToken(userID)
 	if err != nil {
 		return "", "", err
 	}
 
-	refreshToken, err := GenerateRefreshToken(userId)
+	refreshToken, err := GenerateRefreshToken(userID)
 	if err != nil {
 		return "", "", err
 	}
@@ -35,21 +35,21 @@ func GenerateAccessAndRefreshTokens(userId int64) (string, string, error) {
 	return accessToken, refreshToken, err
 }
 
-func GenerateAccessToken(userId int64) (string, error) {
-	accessToken, err := generateToken(userId, AccessTokenAuth)
+func GenerateAccessToken(userID int64) (string, error) {
+	accessToken, err := generateToken(userID, AccessTokenAuth)
 
 	return accessToken, err
 }
 
-func GenerateRefreshToken(userId int64) (string, error) {
-	refreshToken, err := generateToken(userId, RefreshTokenAuth)
+func GenerateRefreshToken(userID int64) (string, error) {
+	refreshToken, err := generateToken(userID, RefreshTokenAuth)
 
 	return refreshToken, err
 }
 
-func generateToken(userId int64, auth *jwtauth.JWTAuth) (string, error) {
+func generateToken(userID int64, auth *jwtauth.JWTAuth) (string, error) {
 	claims := map[string]any{
-		"uid": userId,
+		"uid": userID,
 	}
 
 	jwtauth.SetIssuedNow(claims)

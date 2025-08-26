@@ -30,13 +30,13 @@ func (q *Queries) CreateProblem(ctx context.Context, arg CreateProblemParams) (P
 	return i, err
 }
 
-const getProblemById = `-- name: GetProblemById :one
+const getProblemByID = `-- name: GetProblemByID :one
 SELECT id, title, description FROM problems
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetProblemById(ctx context.Context, id int64) (Problem, error) {
-	row := q.db.QueryRowContext(ctx, getProblemById, id)
+func (q *Queries) GetProblemByID(ctx context.Context, id int64) (Problem, error) {
+	row := q.db.QueryRowContext(ctx, getProblemByID, id)
 	var i Problem
 	err := row.Scan(&i.ID, &i.Title, &i.Description)
 	return i, err

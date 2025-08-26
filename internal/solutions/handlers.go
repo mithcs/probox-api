@@ -13,44 +13,44 @@ import (
 )
 
 type GetSolutionResponse struct {
-	Id          int64  `json:"id"`
-	ProblemId   int64  `json:"problemId"`
+	ID          int64  `json:"id"`
+	ProblemID   int64  `json:"problem_id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
 
 type GetSolutionsForProblemResponse struct {
-	Id          int64  `json:"id"`
+	ID          int64  `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
 
 type CreateSolutionRequest struct {
-	ProblemId   int64  `json:"problemId"`
+	ProblemID   int64  `json:"problem_id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
 
 type CreateSolutionResponse struct {
-	Id          int64  `json:"id"`
-	ProblemId   int64  `json:"problemId"`
+	ID          int64  `json:"id"`
+	ProblemID   int64  `json:"problem_id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
 
 func GetSolution(w http.ResponseWriter, r *http.Request) {
-	solutionId, err := strconv.ParseInt(chi.URLParam(r, "solutionId"), 10, 64)
+	solutionID, err := strconv.ParseInt(chi.URLParam(r, "solution_id"), 10, 64)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
 			Title:   "Bad Request.",
-			Details: "Invalid solution id.",
+			Details: "Invalid Solution ID.",
 		})
 
 		return
 	}
 
-	solution, err := getSolutionById(r.Context(), solutionId)
+	solution, err := getSolutionByID(r.Context(), solutionID)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusInternalServerError,
@@ -75,12 +75,12 @@ func GetSolution(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func getSolutionById(ctx context.Context, solutionId int64) (GetSolutionResponse, error) {
-	p, err := getSolutionByIdFromDb(ctx, solutionId)
+func getSolutionByID(ctx context.Context, solutionID int64) (GetSolutionResponse, error) {
+	p, err := getSolutionByIDFromDb(ctx, solutionID)
 
 	solution := GetSolutionResponse{
-		Id:          p.ID,
-		ProblemId:   p.Problemid,
+		ID:          p.ID,
+		ProblemID:   p.ProblemID,
 		Title:       p.Title,
 		Description: p.Description,
 	}
@@ -88,15 +88,15 @@ func getSolutionById(ctx context.Context, solutionId int64) (GetSolutionResponse
 	return solution, err
 }
 
-func getSolutionByIdFromDb(ctx context.Context, solutionId int64) (db.Solution, error) {
-	solution, err := globals.Queries.GetSolutionById(ctx, solutionId)
+func getSolutionByIDFromDb(ctx context.Context, solutionID int64) (db.Solution, error) {
+	solution, err := globals.Queries.GetSolutionByID(ctx, solutionID)
 
 	return solution, err
 }
 
 func GetSolutions(w http.ResponseWriter, r *http.Request) {
-	if problemId := r.URL.Query().Get("problemId"); problemId != "" {
-		GetSolutionsForProblem(w, r, problemId)
+	if problemID := r.URL.Query().Get("problem_id"); problemID != "" {
+		GetSolutionsForProblem(w, r, problemID)
 		return
 	}
 
@@ -134,8 +134,8 @@ func getAllSolutions(ctx context.Context) ([]GetSolutionResponse, error) {
 	var solutions []GetSolutionResponse
 	for _, solutionRow := range solutionRows {
 		solutions = append(solutions, GetSolutionResponse{
-			Id:          solutionRow.ID,
-			ProblemId:   solutionRow.Problemid,
+			ID:          solutionRow.ID,
+			ProblemID:   solutionRow.ProblemID,
 			Title:       solutionRow.Title,
 			Description: solutionRow.Description,
 		})
@@ -150,19 +150,19 @@ func getSolutionsFromDb(ctx context.Context) ([]db.Solution, error) {
 	return solutionRows, err
 }
 
-func GetSolutionsForProblem(w http.ResponseWriter, r *http.Request, problemId string) {
-	pid, err := strconv.ParseInt(problemId, 10, 64)
+func GetSolutionsForProblem(w http.ResponseWriter, r *http.Request, problemID string) {
+	pid, err := strconv.ParseInt(problemID, 10, 64)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
 			Title:   "Bad Request.",
-			Details: "Invalid Problem Id.",
+			Details: "Invalid Problem ID.",
 		})
 
 		return
 	}
 
-	solutions, err := getSolutionsByProblemId(r.Context(), pid)
+	solutions, err := getSolutionsByProblemID(r.Context(), pid)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
@@ -197,8 +197,8 @@ func GetSolutionsForProblem(w http.ResponseWriter, r *http.Request, problemId st
 	w.Write(response)
 }
 
-func getSolutionsByProblemId(ctx context.Context, problemId int64) ([]GetSolutionsForProblemResponse, error) {
-	solutionRows, err := getSolutionsByProblemIdFromDb(ctx, problemId)
+func getSolutionsByProblemID(ctx context.Context, problemID int64) ([]GetSolutionsForProblemResponse, error) {
+	solutionRows, err := getSolutionsByProblemIDFromDb(ctx, problemID)
 	if err != nil {
 		return []GetSolutionsForProblemResponse{}, err
 	}
@@ -206,7 +206,7 @@ func getSolutionsByProblemId(ctx context.Context, problemId int64) ([]GetSolutio
 	var solutions []GetSolutionsForProblemResponse
 	for _, solutionRow := range solutionRows {
 		solutions = append(solutions, GetSolutionsForProblemResponse{
-			Id:          solutionRow.ID,
+			ID:          solutionRow.ID,
 			Title:       solutionRow.Title,
 			Description: solutionRow.Description,
 		})
@@ -215,8 +215,8 @@ func getSolutionsByProblemId(ctx context.Context, problemId int64) ([]GetSolutio
 	return solutions, nil
 }
 
-func getSolutionsByProblemIdFromDb(ctx context.Context, problemId int64) ([]db.Solution, error) {
-	solutionRows, err := globals.Queries.GetSolutionsByProblemId(ctx, problemId)
+func getSolutionsByProblemIDFromDb(ctx context.Context, problemID int64) ([]db.Solution, error) {
+	solutionRows, err := globals.Queries.GetSolutionsByProblemID(ctx, problemID)
 
 	return solutionRows, err
 }
@@ -256,8 +256,8 @@ func CreateSolution(w http.ResponseWriter, r *http.Request) {
 	}
 
 	solutionRes := CreateSolutionResponse{
-		Id:          s.ID,
-		ProblemId:   s.Problemid,
+		ID:          s.ID,
+		ProblemID:   s.ProblemID,
 		Title:       s.Title,
 		Description: s.Description,
 	}
@@ -277,7 +277,7 @@ func CreateSolution(w http.ResponseWriter, r *http.Request) {
 }
 
 func (solution *CreateSolutionRequest) validate(ctx context.Context) error {
-	if err := validateProblemId(ctx, solution.ProblemId); err != nil {
+	if err := validateProblemID(ctx, solution.ProblemID); err != nil {
 		return err
 	}
 
@@ -292,10 +292,10 @@ func (solution *CreateSolutionRequest) validate(ctx context.Context) error {
 	return nil
 }
 
-func validateProblemId(ctx context.Context, problemId int64) error {
-	problem, _ := globals.Queries.GetProblemById(ctx, problemId)
+func validateProblemID(ctx context.Context, problemID int64) error {
+	problem, _ := globals.Queries.GetProblemByID(ctx, problemID)
 	if problem.ID == 0 || problem.Title == "" || problem.Description == "" {
-		return errors.New("Invalid Problem Id.")
+		return errors.New("Invalid Problem ID.")
 	}
 
 	return nil
@@ -309,7 +309,7 @@ func validateTitle(title string) error {
 		return nil
 	}
 
-	return errors.New("Invalid title.")
+	return errors.New("Invalid Title.")
 }
 
 func validateDescription(description string) error {
@@ -320,12 +320,12 @@ func validateDescription(description string) error {
 		return nil
 	}
 
-	return errors.New("Invalid description.")
+	return errors.New("Invalid Description.")
 }
 
 func storeSolution(ctx context.Context, solution CreateSolutionRequest) (db.Solution, error) {
 	s, err := globals.Queries.CreateSolution(ctx, db.CreateSolutionParams{
-		Problemid:   solution.ProblemId,
+		ProblemID:   solution.ProblemID,
 		Title:       solution.Title,
 		Description: solution.Description,
 	})

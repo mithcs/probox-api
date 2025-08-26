@@ -14,7 +14,7 @@ import (
 )
 
 type GetUsersResponse struct {
-	Id       int64  `json:"id"`
+	ID       int64  `json:"id"`
 	Username string `json:"username"`
 }
 
@@ -24,8 +24,8 @@ type CreateUserRequest struct {
 }
 
 type CreateUserResponse struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +63,7 @@ func getAllUsers(ctx context.Context) ([]GetUsersResponse, error) {
 	var users []GetUsersResponse
 	for _, userRow := range userRows {
 		users = append(users, GetUsersResponse{
-			Id:       userRow.ID,
+			ID:       userRow.ID,
 			Username: userRow.Username,
 		})
 	}
@@ -111,7 +111,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := storeUser(r.Context(), user.Username, hashedPass)
+	userID, err := storeUser(r.Context(), user.Username, hashedPass)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusInternalServerError,
@@ -122,7 +122,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokens, err := generateTokens(userId)
+	tokens, err := generateTokens(userID)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusInternalServerError,
@@ -154,16 +154,16 @@ func hashPass(pass string) (string, error) {
 }
 
 func storeUser(ctx context.Context, username string, password string) (int64, error) {
-	userId, err := globals.Queries.CreateUser(ctx, db.CreateUserParams{
+	userID, err := globals.Queries.CreateUser(ctx, db.CreateUserParams{
 		Username: username,
 		Password: password,
 	})
 
-	return userId, err
+	return userID, err
 }
 
-func generateTokens(userId int64) (CreateUserResponse, error) {
-	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userId)
+func generateTokens(userID int64) (CreateUserResponse, error) {
+	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userID)
 
 	tokens := CreateUserResponse{
 		AccessToken:  accessToken,
@@ -196,7 +196,7 @@ func validateUsername(username string) error {
 	// max 16 chars
 	r := regexp.MustCompile(`^[A-Za-z]\w{2,15}$`)
 	if !r.MatchString(username) {
-		return errors.New("Invalid username.")
+		return errors.New("Invalid Username.")
 	}
 
 	return nil
@@ -205,7 +205,7 @@ func validateUsername(username string) error {
 func validatePassword(password string) error {
 	err := validator.Validate(password, 60)
 	if err != nil {
-		return errors.New("Password is insecure.")
+		return errors.New("Password is Insecure.")
 	}
 
 	return nil

@@ -1,6 +1,6 @@
 CREATE TABLE solutions (
     id           BIGSERIAL    PRIMARY KEY,
-    problemId    BIGINT       NOT NULL CHECK (problemId > 0),
+    problem_id   BIGINT       NOT NULL CHECK (problem_id > 0),
     title        VARCHAR(120) NOT NULL,
     description  TEXT         NOT NULL
 );

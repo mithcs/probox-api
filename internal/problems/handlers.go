@@ -13,7 +13,7 @@ import (
 )
 
 type GetProblemResponse struct {
-	Id          int64  `json:"id"`
+	ID          int64  `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
@@ -24,13 +24,13 @@ type CreateProblemRequest struct {
 }
 
 type CreateProblemResponse struct {
-	Id          int64  `json:"id"`
+	ID          int64  `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
 
 func GetProblem(w http.ResponseWriter, r *http.Request) {
-	problemId, err := strconv.ParseInt(chi.URLParam(r, "problemId"), 10, 64)
+	problemID, err := strconv.ParseInt(chi.URLParam(r, "problemID"), 10, 64)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
@@ -41,7 +41,7 @@ func GetProblem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	problem, err := getProblemById(r.Context(), problemId)
+	problem, err := getProblemByID(r.Context(), problemID)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusInternalServerError,
@@ -66,11 +66,11 @@ func GetProblem(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func getProblemById(ctx context.Context, problemId int64) (GetProblemResponse, error) {
-	p, err := getProblemByIdFromDb(ctx, problemId)
+func getProblemByID(ctx context.Context, problemID int64) (GetProblemResponse, error) {
+	p, err := getProblemByIDFromDb(ctx, problemID)
 
 	problem := GetProblemResponse{
-		Id:          p.ID,
+		ID:          p.ID,
 		Title:       p.Title,
 		Description: p.Description,
 	}
@@ -78,8 +78,8 @@ func getProblemById(ctx context.Context, problemId int64) (GetProblemResponse, e
 	return problem, err
 }
 
-func getProblemByIdFromDb(ctx context.Context, problemId int64) (db.Problem, error) {
-	problem, err := globals.Queries.GetProblemById(ctx, problemId)
+func getProblemByIDFromDb(ctx context.Context, problemID int64) (db.Problem, error) {
+	problem, err := globals.Queries.GetProblemByID(ctx, problemID)
 
 	return problem, err
 }
@@ -119,7 +119,7 @@ func getAllProblems(ctx context.Context) ([]GetProblemResponse, error) {
 	var problems []GetProblemResponse
 	for _, problemRow := range problemRows {
 		problems = append(problems, GetProblemResponse{
-			Id:          problemRow.ID,
+			ID:          problemRow.ID,
 			Title:       problemRow.Title,
 			Description: problemRow.Description,
 		})
@@ -169,7 +169,7 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	problemRes := CreateProblemResponse{
-		Id:          p.ID,
+		ID:          p.ID,
 		Title:       p.Title,
 		Description: p.Description,
 	}

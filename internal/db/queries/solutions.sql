@@ -1,18 +1,18 @@
 -- name: CreateSolution :one
 INSERT INTO solutions (
-    problemId, title, description
+    problem_id, title, description
 ) VALUES (
     $1, $2, $3
 )
 RETURNING *;
 
 -- name: GetSolutions :many
-SELECT id, problemId, title, description FROM solutions;
+SELECT id, problem_id, title, description FROM solutions;
 
--- name: GetSolutionsByProblemId :many
-SELECT id, problemId, title, description FROM solutions
-WHERE problemId = $1;
+-- name: GetSolutionsByProblemID :many
+SELECT id, problem_id, title, description FROM solutions
+WHERE problem_id = $1;
 
--- name: GetSolutionById :one
-SELECT id, problemId, title, description FROM solutions
+-- name: GetSolutionByID :one
+SELECT id, problem_id, title, description FROM solutions
 WHERE id = $1 LIMIT 1;
