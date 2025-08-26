@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 )
 
-type GetProblemsResponse struct {
+type GetProblemResponse struct {
 	Id          int64  `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
@@ -25,6 +27,61 @@ type CreateProblemResponse struct {
 	Id          int64  `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
+}
+
+func GetProblem(w http.ResponseWriter, r *http.Request) {
+	problemId, err := strconv.ParseInt(chi.URLParam(r, "problemId"), 10, 64)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: "Invalid problem id.",
+		})
+
+		return
+	}
+
+	problem, err := getProblemById(r.Context(), problemId)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not get problem.",
+		})
+
+		return
+	}
+
+	response, err := json.Marshal(problem)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not list problem.",
+		})
+
+		return
+	}
+
+	w.Write(response)
+}
+
+func getProblemById(ctx context.Context, problemId int64) (GetProblemResponse, error) {
+	p, err := getProblemByIdFromDb(ctx, problemId)
+
+	problem := GetProblemResponse{
+		Id:          p.ID,
+		Title:       p.Title,
+		Description: p.Description,
+	}
+
+	return problem, err
+}
+
+func getProblemByIdFromDb(ctx context.Context, problemId int64) (db.Problem, error) {
+	problem, err := globals.Queries.GetProblemById(ctx, problemId)
+
+	return problem, err
 }
 
 func GetProblems(w http.ResponseWriter, r *http.Request) {
@@ -53,15 +110,15 @@ func GetProblems(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func getAllProblems(ctx context.Context) ([]GetProblemsResponse, error) {
+func getAllProblems(ctx context.Context) ([]GetProblemResponse, error) {
 	problemRows, err := getProblemsFromDb(ctx)
 	if err != nil {
-		return []GetProblemsResponse{}, err
+		return []GetProblemResponse{}, err
 	}
 
-	var problems []GetProblemsResponse
+	var problems []GetProblemResponse
 	for _, problemRow := range problemRows {
-		problems = append(problems, GetProblemsResponse{
+		problems = append(problems, GetProblemResponse{
 			Id:          problemRow.ID,
 			Title:       problemRow.Title,
 			Description: problemRow.Description,
