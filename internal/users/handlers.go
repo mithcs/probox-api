@@ -6,14 +6,16 @@ import (
 	"errors"
 	"net/http"
 	"regexp"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 	validator "github.com/wagslane/go-password-validator"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type GetUsersResponse struct {
+type GetUserResponse struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
 	FullName string `json:"full_name"`
@@ -28,6 +30,109 @@ type CreateUserRequest struct {
 type CreateUserResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
+}
+
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	identifier := chi.URLParam(r, "identifier")
+	if id, err := strconv.ParseInt(identifier, 10, 64); err == nil {
+		GetUserByID(w, r, id)
+	} else {
+		GetUserByUsername(w, r, identifier)
+	}
+}
+
+func GetUserByID(w http.ResponseWriter, r *http.Request, id int64) {
+	user, err := getUserByID(r.Context(), id)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: "Could not get user.",
+		})
+
+		return
+	}
+
+	response, err := json.Marshal(user)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not list user.",
+		})
+
+		return
+	}
+
+	w.Write(response)
+}
+
+func getUserByID(ctx context.Context, id int64) (GetUserResponse, error) {
+	userRows, err := getUserByIDFromDb(ctx, id)
+	if err != nil {
+		return GetUserResponse{}, err
+	}
+
+	user := GetUserResponse{
+		ID:       userRows.ID,
+		Username: userRows.Username,
+		FullName: userRows.FullName,
+	}
+
+	return user, nil
+}
+
+func getUserByIDFromDb(ctx context.Context, id int64) (db.GetUserByIDRow, error) {
+	userRows, err := globals.Queries.GetUserByID(ctx, id)
+
+	return userRows, err
+}
+
+func GetUserByUsername(w http.ResponseWriter, r *http.Request, username string) {
+	user, err := getUserByUsername(r.Context(), username)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: "Could not get user.",
+		})
+
+		return
+	}
+
+	response, err := json.Marshal(user)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not list user.",
+		})
+
+		return
+	}
+
+	w.Write(response)
+}
+
+func getUserByUsername(ctx context.Context, username string) (GetUserResponse, error) {
+	userRows, err := getUserByUsernameFromDb(ctx, username)
+	if err != nil {
+		return GetUserResponse{}, err
+	}
+
+	user := GetUserResponse{
+		ID:       userRows.ID,
+		Username: userRows.Username,
+		FullName: userRows.FullName,
+	}
+
+	return user, nil
+}
+
+func getUserByUsernameFromDb(ctx context.Context, username string) (db.GetUserByUsernameRow, error) {
+	userRows, err := globals.Queries.GetUserByUsername(ctx, username)
+
+	return userRows, err
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
@@ -56,15 +161,15 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func getAllUsers(ctx context.Context) ([]GetUsersResponse, error) {
+func getAllUsers(ctx context.Context) ([]GetUserResponse, error) {
 	userRows, err := getUsersFromDb(ctx)
 	if err != nil {
-		return []GetUsersResponse{}, err
+		return []GetUserResponse{}, err
 	}
 
-	var users []GetUsersResponse
+	var users []GetUserResponse
 	for _, userRow := range userRows {
-		users = append(users, GetUsersResponse{
+		users = append(users, GetUserResponse{
 			ID:       userRow.ID,
 			Username: userRow.Username,
 			FullName: userRow.FullName,
