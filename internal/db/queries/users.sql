@@ -9,6 +9,10 @@ RETURNING id;
 -- name: GetUsers :many
 SELECT id, username, full_name FROM users;
 
+-- name: GetUserByID :one
+SELECT id, username, full_name FROM users
+WHERE id = $1 LIMIT 1;
+
 -- name: GetUserByUsername :one
 SELECT id, username, full_name FROM users
 WHERE username = $1 LIMIT 1;
