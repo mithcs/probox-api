@@ -32,11 +32,20 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int64, 
 }
 
 const deleteUserByID = `-- name: DeleteUserByID :exec
-DELETE FROM users WHERE id = $1
+UPDATE users SET
+    username = '_user' || id,
+    full_name = 'Deleted User',
+    password = $2
+WHERE id = $1
 `
 
-func (q *Queries) DeleteUserByID(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteUserByID, id)
+type DeleteUserByIDParams struct {
+	ID       int64
+	Password string
+}
+
+func (q *Queries) DeleteUserByID(ctx context.Context, arg DeleteUserByIDParams) error {
+	_, err := q.db.ExecContext(ctx, deleteUserByID, arg.ID, arg.Password)
 	return err
 }
 

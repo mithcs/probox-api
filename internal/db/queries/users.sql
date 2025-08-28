@@ -22,4 +22,8 @@ SELECT id, username, password FROM users
 WHERE username = $1 LIMIT 1;
 
 -- name: DeleteUserByID :exec
-DELETE FROM users WHERE id = $1;
+UPDATE users SET
+    username = '_user' || id,
+    full_name = 'Deleted User',
+    password = $2
+WHERE id = $1;
