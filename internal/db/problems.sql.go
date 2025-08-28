@@ -11,39 +11,58 @@ import (
 
 const createProblem = `-- name: CreateProblem :one
 INSERT INTO problems (
-    title, description
+    title, description, owner_id, owner_name
 ) VALUES (
-    $1, $2
+    $1, $2, $3, $4
 )
-RETURNING id, title, description
+RETURNING id, title, description, owner_id, owner_name
 `
 
 type CreateProblemParams struct {
 	Title       string
 	Description string
+	OwnerID     int64
+	OwnerName   string
 }
 
 func (q *Queries) CreateProblem(ctx context.Context, arg CreateProblemParams) (Problem, error) {
-	row := q.db.QueryRowContext(ctx, createProblem, arg.Title, arg.Description)
+	row := q.db.QueryRowContext(ctx, createProblem,
+		arg.Title,
+		arg.Description,
+		arg.OwnerID,
+		arg.OwnerName,
+	)
 	var i Problem
-	err := row.Scan(&i.ID, &i.Title, &i.Description)
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.OwnerID,
+		&i.OwnerName,
+	)
 	return i, err
 }
 
 const getProblemByID = `-- name: GetProblemByID :one
-SELECT id, title, description FROM problems
+SELECT id, title, description, owner_id, owner_name FROM problems
 WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetProblemByID(ctx context.Context, id int64) (Problem, error) {
 	row := q.db.QueryRowContext(ctx, getProblemByID, id)
 	var i Problem
-	err := row.Scan(&i.ID, &i.Title, &i.Description)
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.OwnerID,
+		&i.OwnerName,
+	)
 	return i, err
 }
 
 const getProblems = `-- name: GetProblems :many
-SELECT id, title, description FROM problems
+SELECT id, title, description, owner_id, owner_name FROM problems
 `
 
 func (q *Queries) GetProblems(ctx context.Context) ([]Problem, error) {
@@ -55,7 +74,13 @@ func (q *Queries) GetProblems(ctx context.Context) ([]Problem, error) {
 	var items []Problem
 	for rows.Next() {
 		var i Problem
-		if err := rows.Scan(&i.ID, &i.Title, &i.Description); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.OwnerID,
+			&i.OwnerName,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

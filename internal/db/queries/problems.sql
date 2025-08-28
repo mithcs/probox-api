@@ -1,15 +1,15 @@
 -- name: CreateProblem :one
 INSERT INTO problems (
-    title, description
+    title, description, owner_id, owner_name
 ) VALUES (
-    $1, $2
+    $1, $2, $3, $4
 )
 RETURNING *;
 
 -- name: GetProblems :many
-SELECT id, title, description FROM problems;
+SELECT id, title, description, owner_id, owner_name FROM problems;
 
 -- name: GetProblemByID :one
-SELECT * FROM problems
+SELECT id, title, description, owner_id, owner_name FROM problems
 WHERE id = $1 LIMIT 1;
 

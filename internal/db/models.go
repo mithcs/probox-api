@@ -8,6 +8,8 @@ type Problem struct {
 	ID          int64
 	Title       string
 	Description string
+	OwnerID     int64
+	OwnerName   string
 }
 
 type Solution struct {
