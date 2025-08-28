@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -101,7 +102,11 @@ func deleteUserByID(ctx context.Context, id int64) error {
 }
 
 func deleteUserByIDFromDb(ctx context.Context, id int64) error {
-	err := globals.Queries.DeleteUserByID(ctx, id)
+	random := rand.Text() + rand.Text()
+	err := globals.Queries.DeleteUserByID(ctx, db.DeleteUserByIDParams{
+		ID:       id,
+		Password: random,
+	})
 
 	return err
 }
