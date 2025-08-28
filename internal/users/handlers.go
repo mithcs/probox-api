@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 	validator "github.com/wagslane/go-password-validator"
@@ -30,6 +32,78 @@ type CreateUserRequest struct {
 type CreateUserResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
+}
+
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: "Invalid User ID.",
+		})
+
+		return
+	}
+
+	err = compareUserIDWithToken(r.Context(), id)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusUnauthorized,
+			Title:   "Unauthorized Action.",
+			Details: err.Error(),
+		})
+
+		return
+	}
+
+	err = deleteUserByID(r.Context(), id)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not delete user.",
+		})
+
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func compareUserIDWithToken(ctx context.Context, id int64) error {
+	uid, err := getUserIDFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	if uid != id {
+		return errors.New("Not authorized to delete user.")
+	}
+
+	return nil
+}
+
+func getUserIDFromContext(ctx context.Context) (int64, error) {
+	_, claims, err := jwtauth.FromContext(ctx)
+	if err != nil {
+		return -1, err
+	}
+
+	uid_s := fmt.Sprintf("%v", claims["uid"])
+	uid, err := strconv.ParseInt(uid_s, 10, 64)
+
+	return uid, err
+}
+
+func deleteUserByID(ctx context.Context, id int64) error {
+	return deleteUserByIDFromDb(ctx, id)
+}
+
+func deleteUserByIDFromDb(ctx context.Context, id int64) error {
+	err := globals.Queries.DeleteUserByID(ctx, id)
+
+	return err
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
