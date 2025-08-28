@@ -20,3 +20,6 @@ WHERE username = $1 LIMIT 1;
 -- name: GetCredentialsByUsername :one
 SELECT id, username, password FROM users
 WHERE username = $1 LIMIT 1;
+
+-- name: DeleteUserByID :exec
+DELETE FROM users WHERE id = $1;

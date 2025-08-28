@@ -31,6 +31,15 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int64, 
 	return id, err
 }
 
+const deleteUserByID = `-- name: DeleteUserByID :exec
+DELETE FROM users WHERE id = $1
+`
+
+func (q *Queries) DeleteUserByID(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteUserByID, id)
+	return err
+}
+
 const getCredentialsByUsername = `-- name: GetCredentialsByUsername :one
 SELECT id, username, password FROM users
 WHERE username = $1 LIMIT 1
