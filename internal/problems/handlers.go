@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 )
@@ -16,6 +18,8 @@ type GetProblemResponse struct {
 	ID          int64  `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	OwnerID     int64  `json:"owner_id"`
+	OwnerName   string `json:"owner_name"`
 }
 
 type CreateProblemRequest struct {
@@ -27,6 +31,15 @@ type CreateProblemResponse struct {
 	ID          int64  `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	OwnerID     int64  `json:"owner_id"`
+	OwnerName   string `json:"owner_name"`
+}
+
+type ProblemToStore struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	OwnerID     int64  `json:"owner_id"`
+	OwnerName   string `json:"owner_name"`
 }
 
 func GetProblem(w http.ResponseWriter, r *http.Request) {
@@ -73,6 +86,8 @@ func getProblemByID(ctx context.Context, problemID int64) (GetProblemResponse, e
 		ID:          p.ID,
 		Title:       p.Title,
 		Description: p.Description,
+		OwnerID:     p.OwnerID,
+		OwnerName:   p.OwnerName,
 	}
 
 	return problem, err
@@ -122,6 +137,8 @@ func getAllProblems(ctx context.Context) ([]GetProblemResponse, error) {
 			ID:          problemRow.ID,
 			Title:       problemRow.Title,
 			Description: problemRow.Description,
+			OwnerID:     problemRow.OwnerID,
+			OwnerName:   problemRow.OwnerName,
 		})
 	}
 
@@ -157,7 +174,34 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := storeProblem(r.Context(), problem)
+	uid, err := getUserIDFromContext(r.Context())
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not get User ID from token.",
+		})
+
+		return
+	}
+
+	name, err := getFullNameByID(r.Context(), uid)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not get Full Name from User ID.",
+		})
+
+		return
+	}
+
+	p, err := storeProblem(r.Context(), ProblemToStore{
+		Title:       problem.Title,
+		Description: problem.Description,
+		OwnerID:     uid,
+		OwnerName:   name,
+	})
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusInternalServerError,
@@ -172,6 +216,8 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 		ID:          p.ID,
 		Title:       p.Title,
 		Description: p.Description,
+		OwnerID:     p.OwnerID,
+		OwnerName:   p.OwnerName,
 	}
 
 	response, err := json.Marshal(problemRes)
@@ -188,10 +234,12 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func storeProblem(ctx context.Context, problem CreateProblemRequest) (db.Problem, error) {
+func storeProblem(ctx context.Context, problem ProblemToStore) (db.Problem, error) {
 	p, err := globals.Queries.CreateProblem(ctx, db.CreateProblemParams{
 		Title:       problem.Title,
 		Description: problem.Description,
+		OwnerID:     problem.OwnerID,
+		OwnerName:   problem.OwnerName,
 	})
 
 	return p, err
@@ -229,4 +277,26 @@ func validateDescription(description string) error {
 	}
 
 	return errors.New("Invalid Description.")
+}
+
+func getUserIDFromContext(ctx context.Context) (int64, error) {
+	_, claims, err := jwtauth.FromContext(ctx)
+	if err != nil {
+		return -1, err
+	}
+
+	uid, err := strconv.ParseInt(fmt.Sprintf("%v", claims["uid"]), 10, 64)
+	if err != nil {
+		return -1, err
+	}
+
+	return uid, nil
+}
+
+func getFullNameByID(ctx context.Context, id int64) (string, error) {
+	return getFullNameByIDFromDb(ctx, id)
+}
+
+func getFullNameByIDFromDb(ctx context.Context, id int64) (string, error) {
+	return globals.Queries.GetFullNameByID(ctx, id)
 }
