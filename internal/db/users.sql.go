@@ -67,6 +67,18 @@ func (q *Queries) GetCredentialsByUsername(ctx context.Context, username string)
 	return i, err
 }
 
+const getFullNameByID = `-- name: GetFullNameByID :one
+SELECT full_name FROM users
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetFullNameByID(ctx context.Context, id int64) (string, error) {
+	row := q.db.QueryRowContext(ctx, getFullNameByID, id)
+	var full_name string
+	err := row.Scan(&full_name)
+	return full_name, err
+}
+
 const getUserByID = `-- name: GetUserByID :one
 SELECT id, username, full_name FROM users
 WHERE id = $1 LIMIT 1
