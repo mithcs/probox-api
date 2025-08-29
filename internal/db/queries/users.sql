@@ -21,6 +21,10 @@ WHERE username = $1 LIMIT 1;
 SELECT id, username, password FROM users
 WHERE username = $1 LIMIT 1;
 
+-- name: GetFullNameByID :one
+SELECT full_name FROM users
+WHERE id = $1 LIMIT 1;
+
 -- name: DeleteUserByID :exec
 UPDATE users SET
     username = '_user' || id,
