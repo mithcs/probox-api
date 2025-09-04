@@ -76,7 +76,7 @@ func GetSolution(w http.ResponseWriter, r *http.Request) {
 }
 
 func getSolutionByID(ctx context.Context, solutionID int64) (GetSolutionResponse, error) {
-	p, err := getSolutionByIDFromDb(ctx, solutionID)
+	p, err := getSolutionByIDFromDB(ctx, solutionID)
 
 	solution := GetSolutionResponse{
 		ID:          p.ID,
@@ -88,7 +88,7 @@ func getSolutionByID(ctx context.Context, solutionID int64) (GetSolutionResponse
 	return solution, err
 }
 
-func getSolutionByIDFromDb(ctx context.Context, solutionID int64) (db.Solution, error) {
+func getSolutionByIDFromDB(ctx context.Context, solutionID int64) (db.Solution, error) {
 	solution, err := globals.Queries.GetSolutionByID(ctx, solutionID)
 
 	return solution, err
@@ -126,7 +126,7 @@ func GetSolutions(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllSolutions(ctx context.Context) ([]GetSolutionResponse, error) {
-	solutionRows, err := getSolutionsFromDb(ctx)
+	solutionRows, err := getSolutionsFromDB(ctx)
 	if err != nil {
 		return []GetSolutionResponse{}, err
 	}
@@ -144,7 +144,7 @@ func getAllSolutions(ctx context.Context) ([]GetSolutionResponse, error) {
 	return solutions, nil
 }
 
-func getSolutionsFromDb(ctx context.Context) ([]db.Solution, error) {
+func getSolutionsFromDB(ctx context.Context) ([]db.Solution, error) {
 	solutionRows, err := globals.Queries.GetSolutions(ctx)
 
 	return solutionRows, err
@@ -198,7 +198,7 @@ func GetSolutionsForProblem(w http.ResponseWriter, r *http.Request, problemID st
 }
 
 func getSolutionsByProblemID(ctx context.Context, problemID int64) ([]GetSolutionsForProblemResponse, error) {
-	solutionRows, err := getSolutionsByProblemIDFromDb(ctx, problemID)
+	solutionRows, err := getSolutionsByProblemIDFromDB(ctx, problemID)
 	if err != nil {
 		return []GetSolutionsForProblemResponse{}, err
 	}
@@ -215,7 +215,7 @@ func getSolutionsByProblemID(ctx context.Context, problemID int64) ([]GetSolutio
 	return solutions, nil
 }
 
-func getSolutionsByProblemIDFromDb(ctx context.Context, problemID int64) ([]db.Solution, error) {
+func getSolutionsByProblemIDFromDB(ctx context.Context, problemID int64) ([]db.Solution, error) {
 	solutionRows, err := globals.Queries.GetSolutionsByProblemID(ctx, problemID)
 
 	return solutionRows, err

@@ -80,7 +80,7 @@ func GetProblem(w http.ResponseWriter, r *http.Request) {
 }
 
 func getProblemByID(ctx context.Context, problemID int64) (GetProblemResponse, error) {
-	p, err := getProblemByIDFromDb(ctx, problemID)
+	p, err := getProblemByIDFromDB(ctx, problemID)
 
 	problem := GetProblemResponse{
 		ID:          p.ID,
@@ -93,7 +93,7 @@ func getProblemByID(ctx context.Context, problemID int64) (GetProblemResponse, e
 	return problem, err
 }
 
-func getProblemByIDFromDb(ctx context.Context, problemID int64) (db.Problem, error) {
+func getProblemByIDFromDB(ctx context.Context, problemID int64) (db.Problem, error) {
 	problem, err := globals.Queries.GetProblemByID(ctx, problemID)
 
 	return problem, err
@@ -126,7 +126,7 @@ func GetProblems(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllProblems(ctx context.Context) ([]GetProblemResponse, error) {
-	problemRows, err := getProblemsFromDb(ctx)
+	problemRows, err := getProblemsFromDB(ctx)
 	if err != nil {
 		return []GetProblemResponse{}, err
 	}
@@ -145,7 +145,7 @@ func getAllProblems(ctx context.Context) ([]GetProblemResponse, error) {
 	return problems, nil
 }
 
-func getProblemsFromDb(ctx context.Context) ([]db.Problem, error) {
+func getProblemsFromDB(ctx context.Context) ([]db.Problem, error) {
 	problemRows, err := globals.Queries.GetProblems(ctx)
 
 	return problemRows, err
@@ -294,9 +294,9 @@ func getUserIDFromContext(ctx context.Context) (int64, error) {
 }
 
 func getFullNameByID(ctx context.Context, id int64) (string, error) {
-	return getFullNameByIDFromDb(ctx, id)
+	return getFullNameByIDFromDB(ctx, id)
 }
 
-func getFullNameByIDFromDb(ctx context.Context, id int64) (string, error) {
+func getFullNameByIDFromDB(ctx context.Context, id int64) (string, error) {
 	return globals.Queries.GetFullNameByID(ctx, id)
 }

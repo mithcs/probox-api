@@ -98,10 +98,10 @@ func getUserIDFromContext(ctx context.Context) (int64, error) {
 }
 
 func deleteUserByID(ctx context.Context, id int64) error {
-	return deleteUserByIDFromDb(ctx, id)
+	return deleteUserByIDFromDB(ctx, id)
 }
 
-func deleteUserByIDFromDb(ctx context.Context, id int64) error {
+func deleteUserByIDFromDB(ctx context.Context, id int64) error {
 	random := rand.Text() + rand.Text()
 	err := globals.Queries.DeleteUserByID(ctx, db.DeleteUserByIDParams{
 		ID:       id,
@@ -147,7 +147,7 @@ func GetUserByID(w http.ResponseWriter, r *http.Request, id int64) {
 }
 
 func getUserByID(ctx context.Context, id int64) (GetUserResponse, error) {
-	userRows, err := getUserByIDFromDb(ctx, id)
+	userRows, err := getUserByIDFromDB(ctx, id)
 	if err != nil {
 		return GetUserResponse{}, err
 	}
@@ -161,7 +161,7 @@ func getUserByID(ctx context.Context, id int64) (GetUserResponse, error) {
 	return user, nil
 }
 
-func getUserByIDFromDb(ctx context.Context, id int64) (db.GetUserByIDRow, error) {
+func getUserByIDFromDB(ctx context.Context, id int64) (db.GetUserByIDRow, error) {
 	userRows, err := globals.Queries.GetUserByID(ctx, id)
 
 	return userRows, err
@@ -194,7 +194,7 @@ func GetUserByUsername(w http.ResponseWriter, r *http.Request, username string) 
 }
 
 func getUserByUsername(ctx context.Context, username string) (GetUserResponse, error) {
-	userRows, err := getUserByUsernameFromDb(ctx, username)
+	userRows, err := getUserByUsernameFromDB(ctx, username)
 	if err != nil {
 		return GetUserResponse{}, err
 	}
@@ -208,7 +208,7 @@ func getUserByUsername(ctx context.Context, username string) (GetUserResponse, e
 	return user, nil
 }
 
-func getUserByUsernameFromDb(ctx context.Context, username string) (db.GetUserByUsernameRow, error) {
+func getUserByUsernameFromDB(ctx context.Context, username string) (db.GetUserByUsernameRow, error) {
 	userRows, err := globals.Queries.GetUserByUsername(ctx, username)
 
 	return userRows, err
@@ -241,7 +241,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllUsers(ctx context.Context) ([]GetUserResponse, error) {
-	userRows, err := getUsersFromDb(ctx)
+	userRows, err := getUsersFromDB(ctx)
 	if err != nil {
 		return []GetUserResponse{}, err
 	}
@@ -258,7 +258,7 @@ func getAllUsers(ctx context.Context) ([]GetUserResponse, error) {
 	return users, nil
 }
 
-func getUsersFromDb(ctx context.Context) ([]db.GetUsersRow, error) {
+func getUsersFromDB(ctx context.Context) ([]db.GetUsersRow, error) {
 	userRows, err := globals.Queries.GetUsers(ctx)
 
 	return userRows, err
