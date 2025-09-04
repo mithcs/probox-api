@@ -8,7 +8,7 @@ import (
 
 func SetupProblems(router *chi.Mux) {
 	router.Get("/problems", GetProblems)
-	router.Get("/problems/{problemID}", GetProblem)
+	router.Get("/problems/{id}", GetProblem)
 
 	router.
 		With(jwtauth.Verifier(globals.AccessTokenAuth)).

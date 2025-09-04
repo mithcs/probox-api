@@ -10,7 +10,7 @@ import (
 )
 
 func GetSolution(w http.ResponseWriter, r *http.Request) {
-	solutionID, err := strconv.ParseInt(chi.URLParam(r, "solution_id"), 10, 64)
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
@@ -21,7 +21,7 @@ func GetSolution(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	solution, err := getSolutionByID(r.Context(), solutionID)
+	solution, err := getSolutionByID(r.Context(), id)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusInternalServerError,
