@@ -3,7 +3,6 @@ package problems
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -13,34 +12,6 @@ import (
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 )
-
-type GetProblemResponse struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	OwnerID     int64  `json:"owner_id"`
-	OwnerName   string `json:"owner_name"`
-}
-
-type CreateProblemRequest struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-}
-
-type CreateProblemResponse struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	OwnerID     int64  `json:"owner_id"`
-	OwnerName   string `json:"owner_name"`
-}
-
-type ProblemToStore struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	OwnerID     int64  `json:"owner_id"`
-	OwnerName   string `json:"owner_name"`
-}
 
 func GetProblem(w http.ResponseWriter, r *http.Request) {
 	problemID, err := strconv.ParseInt(chi.URLParam(r, "problemID"), 10, 64)
@@ -163,7 +134,7 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = problem.validate()
+	err = problem.Validate()
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
@@ -243,40 +214,6 @@ func storeProblem(ctx context.Context, problem ProblemToStore) (db.Problem, erro
 	})
 
 	return p, err
-}
-
-func (problem *CreateProblemRequest) validate() error {
-	if err := validateTitle(problem.Title); err != nil {
-		return err
-	}
-
-	if err := validateDescription(problem.Description); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func validateTitle(title string) error {
-	minLen := 5
-	maxLen := 120
-
-	if len(title) > minLen && len(title) < maxLen {
-		return nil
-	}
-
-	return errors.New("Invalid Title.")
-}
-
-func validateDescription(description string) error {
-	minLen := 8
-	maxLen := 20000
-
-	if len(description) > minLen && len(description) < maxLen {
-		return nil
-	}
-
-	return errors.New("Invalid Description.")
 }
 
 func getUserIDFromContext(ctx context.Context) (int64, error) {

@@ -7,33 +7,15 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"regexp"
+
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
-	validator "github.com/wagslane/go-password-validator"
 	"golang.org/x/crypto/bcrypt"
 )
-
-type GetUserResponse struct {
-	ID       int64  `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"full_name"`
-}
-
-type CreateUserRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	FullName string `json:"full_name"`
-}
-
-type CreateUserResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-}
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
@@ -276,7 +258,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = user.validate(r.Context())
+	err = user.Validate(r.Context())
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
@@ -359,68 +341,4 @@ func generateTokens(userID int64) (CreateUserResponse, error) {
 	}
 
 	return tokens, err
-}
-
-func (user *CreateUserRequest) validate(ctx context.Context) error {
-	if err := validateUsername(user.Username); err != nil {
-		return err
-	}
-
-	if err := validatePassword(user.Password); err != nil {
-		return err
-	}
-
-	if err := validateFullName(user.FullName); err != nil {
-		return err
-	}
-
-	if exists := usernameExists(ctx, user.Username); exists {
-		return errors.New("Username already exists.")
-	}
-
-	return nil
-}
-
-func validateUsername(username string) error {
-	// must start with alphabetic character
-	// may include underscore and/or number
-	// min 3 chars
-	// max 16 chars
-	r := regexp.MustCompile(`^[A-Za-z]\w{1,14}\w$`)
-	if !r.MatchString(username) {
-		return errors.New("Invalid Username.")
-	}
-
-	return nil
-}
-
-func validatePassword(password string) error {
-	err := validator.Validate(password, 60)
-	if err != nil {
-		return errors.New("Password is Insecure.")
-	}
-
-	return nil
-}
-
-func validateFullName(fullname string) error {
-	// must start and end with alphabet
-	// may include space
-	// min 3 chars
-	// max 24 chars
-	r := regexp.MustCompile(`^[A-Za-z][A-Za-z ]{1,22}[A-Za-z]$`)
-	if !r.MatchString(fullname) {
-		return errors.New("Invalid Username.")
-	}
-
-	return nil
-}
-
-func usernameExists(ctx context.Context, username string) bool {
-	user, _ := globals.Queries.GetUserByUsername(ctx, username)
-	if user.ID == 0 || user.Username == "" || user.FullName == "" {
-		return false
-	}
-
-	return true
 }

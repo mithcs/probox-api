@@ -15,21 +15,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type CreateTokensRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type CreateTokensResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-}
-
-type RefreshTokensResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-}
-
 func CreateTokens(w http.ResponseWriter, r *http.Request) {
 	creds, err := globals.ParseBody[CreateTokensRequest](r.Body)
 	if err != nil {
@@ -42,7 +27,7 @@ func CreateTokens(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := creds.verify(r.Context())
+	userID, err := creds.Verify(r.Context())
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusBadRequest,
@@ -134,12 +119,6 @@ func retrieveUserID(ctx context.Context) (int64, error) {
 	}
 
 	userID, err := strconv.ParseInt(fmt.Sprintf("%v", claims["uid"]), 10, 64)
-
-	return userID, err
-}
-
-func (req *CreateTokensRequest) verify(ctx context.Context) (int64, error) {
-	userID, err := verifyCredentials(ctx, req.Username, req.Password)
 
 	return userID, err
 }
