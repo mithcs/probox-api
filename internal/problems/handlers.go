@@ -21,6 +21,7 @@ func GetProblem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: problem might not exist
 	problem, err := getProblemByID(r.Context(), id)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{

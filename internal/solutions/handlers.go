@@ -21,6 +21,7 @@ func GetSolution(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: solution might not exist
 	solution, err := getSolutionByID(r.Context(), id)
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
