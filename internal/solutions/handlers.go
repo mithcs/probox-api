@@ -191,6 +191,8 @@ func CreateSolution(w http.ResponseWriter, r *http.Request) {
 		ProblemID:   s.ProblemID,
 		Title:       s.Title,
 		Description: s.Description,
+		OwnerID:     s.OwnerID,
+		OwnerName:   s.OwnerName,
 	}
 
 	response, err := json.Marshal(solutionRes)
