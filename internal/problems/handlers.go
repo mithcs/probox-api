@@ -1,46 +1,28 @@
 package problems
 
 import (
-	"encoding/json"
 	"net/http"
-	"strconv"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/mithcs/probox-api/internal/globals"
 )
 
 func GetProblem(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	id, err := getIDFromRequest(r)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: "Invalid problem id.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	// TODO: problem might not exist
 	problem, err := getProblemByID(r.Context(), id)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not get problem.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
-	response, err := json.Marshal(problem)
+	response, err := globals.EncodeJson(problem)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not list problem.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -50,23 +32,13 @@ func GetProblem(w http.ResponseWriter, r *http.Request) {
 func GetProblems(w http.ResponseWriter, r *http.Request) {
 	problems, err := getAllProblems(r.Context())
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not get all problems.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
-	response, err := json.Marshal(problems)
+	response, err := globals.EncodeJson(problems)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not list all problems.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -76,45 +48,25 @@ func GetProblems(w http.ResponseWriter, r *http.Request) {
 func CreateProblem(w http.ResponseWriter, r *http.Request) {
 	problem, err := globals.ParseBody[CreateProblemRequest](r.Body)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request",
-			Details: "Could not parse the body.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	err = problem.Validate()
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: err.Error(),
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	uid, err := globals.GetUserIDFromContext(r.Context())
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not get User ID from token.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	name, err := getFullNameByID(r.Context(), uid)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not get Full Name from User ID.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -125,12 +77,7 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 		OwnerName:   name,
 	})
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not store problem.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -142,14 +89,9 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 		OwnerName:   p.OwnerName,
 	}
 
-	response, err := json.Marshal(problemRes)
+	response, err := globals.EncodeJson(problemRes)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not return created problem.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -157,58 +99,33 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteProblem(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	id, err := getIDFromRequest(r)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: "Invalid problem id.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	problem, err := getProblemByID(r.Context(), id)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not get problem.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	err = canDeleteProblem(r.Context(), problem)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: err.Error(),
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	err = compareUserIDWithToken(r.Context(), problem.OwnerID)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusUnauthorized,
-			Title:   "Unauthorized Action.",
-			Details: err.Error(),
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	err = deleteProblemByID(r.Context(), id)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not delete problem.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 

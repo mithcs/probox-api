@@ -1,6 +1,11 @@
 package problems
 
-import "errors"
+import (
+	"errors"
+	"net/http"
+
+	"github.com/mithcs/probox-api/internal/globals"
+)
 
 type GetProblemResponse struct {
 	ID          int64  `json:"id"`
@@ -30,13 +35,21 @@ type ProblemToStore struct {
 	OwnerName   string `json:"owner_name"`
 }
 
-func (problem *CreateProblemRequest) Validate() error {
+func (problem *CreateProblemRequest) Validate() *globals.HTTPError {
 	if err := validateTitle(problem.Title); err != nil {
-		return err
+		return &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Invalid Title.",
+			Description: "Title does not meet requirements.",
+		}
 	}
 
 	if err := validateDescription(problem.Description); err != nil {
-		return err
+		return &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Invalid Description.",
+			Description: "Description does not meet requirements.",
+		}
 	}
 
 	return nil

@@ -2,14 +2,32 @@ package problems
 
 import (
 	"context"
-	"errors"
+	"database/sql"
+	"net/http"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 )
 
-func getProblemByID(ctx context.Context, problemID int64) (GetProblemResponse, error) {
+func getProblemByID(ctx context.Context, problemID int64) (GetProblemResponse, *globals.HTTPError) {
 	p, err := getProblemByIDFromDB(ctx, problemID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return GetProblemResponse{}, &globals.HTTPError{
+				Status:      http.StatusNoContent,
+				Title:       "No Content.",
+				Description: "No problem to show.",
+			}
+		}
+
+		return GetProblemResponse{}, &globals.HTTPError{
+			Status:      http.StatusInternalServerError,
+			Title:       "Database Error.",
+			Description: "Could not get problem from database.",
+		}
+	}
 
 	problem := GetProblemResponse{
 		ID:          p.ID,
@@ -19,13 +37,25 @@ func getProblemByID(ctx context.Context, problemID int64) (GetProblemResponse, e
 		OwnerName:   p.OwnerName,
 	}
 
-	return problem, err
+	return problem, nil
 }
 
-func getAllProblems(ctx context.Context) ([]GetProblemResponse, error) {
+func getAllProblems(ctx context.Context) ([]GetProblemResponse, *globals.HTTPError) {
 	problemRows, err := getProblemsFromDB(ctx)
 	if err != nil {
-		return []GetProblemResponse{}, err
+		if err == sql.ErrNoRows {
+			return []GetProblemResponse{}, &globals.HTTPError{
+				Status:      http.StatusNoContent,
+				Title:       "No Content.",
+				Description: "No problems to show.",
+			}
+		}
+
+		return []GetProblemResponse{}, &globals.HTTPError{
+			Status:      http.StatusInternalServerError,
+			Title:       "Database Error.",
+			Description: "Could not get problems from database.",
+		}
 	}
 
 	var problems []GetProblemResponse
@@ -42,44 +72,104 @@ func getAllProblems(ctx context.Context) ([]GetProblemResponse, error) {
 	return problems, nil
 }
 
-func storeProblem(ctx context.Context, problem ProblemToStore) (db.Problem, error) {
-	return storeProblemInDB(ctx, problem)
-}
-
-func getFullNameByID(ctx context.Context, id int64) (string, error) {
-	return getFullNameByIDFromDB(ctx, id)
-}
-
-func canDeleteProblem(ctx context.Context, problem GetProblemResponse) error {
-	solutionCount, err := getSolutionCountForProblem(ctx, problem.ID)
+func storeProblem(ctx context.Context, problem ProblemToStore) (db.Problem, *globals.HTTPError) {
+	p, err := storeProblemInDB(ctx, problem)
 	if err != nil {
-		return errors.New("Cannot get solution count for problem.")
+		return db.Problem{}, &globals.HTTPError{
+			Status:      http.StatusInternalServerError,
+			Title:       "Database Error.",
+			Description: "Could not store problem in database.",
+		}
+	}
+
+	return p, nil
+}
+
+func getFullNameByID(ctx context.Context, id int64) (string, *globals.HTTPError) {
+	name, err := getFullNameByIDFromDB(ctx, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", &globals.HTTPError{
+				Status:      http.StatusNoContent,
+				Title:       "No Content.",
+				Description: "No problem to show.",
+			}
+		}
+
+		return "", &globals.HTTPError{
+			Status:      http.StatusInternalServerError,
+			Title:       "Database Error.",
+			Description: "Could not get fullname from database.",
+		}
+	}
+
+	return name, nil
+}
+
+func canDeleteProblem(ctx context.Context, problem GetProblemResponse) *globals.HTTPError {
+	solutionCount, err := getSolutionCountForProblemFromDB(ctx, problem.ID)
+	if err != nil {
+		return &globals.HTTPError{
+			Status:      http.StatusInternalServerError,
+			Title:       "Database Error.",
+			Description: "Could not get solution count from database.",
+		}
 	}
 
 	if solutionCount != 0 {
-		return errors.New("Problem does not have 0 Solutions. Cannot Delete.")
+		return &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Deletion Error.",
+			Description: "Problem does not have 0 solutions.",
+		}
 	}
 
 	return nil
 }
 
-func getSolutionCountForProblem(ctx context.Context, id int64) (int64, error) {
-	return getSolutionCountForProblemFromDB(ctx, id)
-}
-
-func compareUserIDWithToken(ctx context.Context, id int64) error {
+func compareUserIDWithToken(ctx context.Context, id int64) *globals.HTTPError {
 	uid, err := globals.GetUserIDFromContext(ctx)
 	if err != nil {
-		return errors.New("Could not get User ID from context.")
+		return &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Invalid User ID.",
+			Description: "Could not get user id from request.",
+		}
 	}
 
 	if uid != id {
-		return errors.New("Not authorized to delete user.")
+		return &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Unauthorized Action.",
+			Description: "Not authorized to perform this action to this user.",
+		}
 	}
 
 	return nil
 }
 
-func deleteProblemByID(ctx context.Context, id int64) error {
-	return deleteProblemByIDFromDB(ctx, id)
+func deleteProblemByID(ctx context.Context, id int64) *globals.HTTPError {
+	err := deleteProblemByIDFromDB(ctx, id)
+	if err != nil {
+		return &globals.HTTPError{
+			Status:      http.StatusInternalServerError,
+			Title:       "Database Error.",
+			Description: "Could not get problem from database.",
+		}
+	}
+
+	return nil
+}
+
+func getIDFromRequest(r *http.Request) (int64, *globals.HTTPError) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		return -1, &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Invalid ID.",
+			Description: "Could not parse id.",
+		}
+	}
+
+	return id, nil
 }
