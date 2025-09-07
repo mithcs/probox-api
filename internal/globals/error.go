@@ -5,23 +5,27 @@ import (
 	"net/http"
 )
 
-type Error struct {
-	Status  int
-	Title   string
-	Details string
+type HTTPError struct {
+	Status      int
+	Title       string
+	Description string
 }
 
-type errorResponse struct {
-	Title   string `json:"title"`
-	Details string `json:"details"`
+func (e *HTTPError) Error() string {
+	return e.Description
 }
 
-func WriteErrorResponse(w http.ResponseWriter, error Error) {
-	w.WriteHeader(error.Status)
+type _ErrorResponse struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
 
-	e := errorResponse{
-		Title:   error.Title,
-		Details: error.Details,
+func WriteErrorResponse(w http.ResponseWriter, err *HTTPError) {
+	w.WriteHeader(err.Status)
+
+	e := _ErrorResponse{
+		Title:       err.Title,
+		Description: err.Description,
 	}
 
 	response, _ := json.Marshal(e)
