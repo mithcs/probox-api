@@ -13,3 +13,5 @@ SELECT id, title, description, owner_id, owner_name FROM problems;
 SELECT id, title, description, owner_id, owner_name FROM problems
 WHERE id = $1 LIMIT 1;
 
+-- name: DeleteProblemByID :exec
+DELETE FROM problems WHERE id = $1;

@@ -155,3 +155,62 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(response)
 }
+
+func DeleteProblem(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: "Invalid problem id.",
+		})
+
+		return
+	}
+
+	problem, err := getProblemByID(r.Context(), id)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not get problem.",
+		})
+
+		return
+	}
+
+	err = canDeleteProblem(r.Context(), problem)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusBadRequest,
+			Title:   "Bad Request.",
+			Details: err.Error(),
+		})
+
+		return
+	}
+
+	err = compareUserIDWithToken(r.Context(), problem.OwnerID)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusUnauthorized,
+			Title:   "Unauthorized Action.",
+			Details: err.Error(),
+		})
+
+		return
+	}
+
+	err = deleteProblemByID(r.Context(), id)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not delete problem.",
+		})
+
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

@@ -65,6 +65,18 @@ func (q *Queries) GetSolutionByID(ctx context.Context, id int64) (Solution, erro
 	return i, err
 }
 
+const getSolutionCountByProblemID = `-- name: GetSolutionCountByProblemID :one
+SELECT count(*) FROM solutions
+WHERE problem_id = $1
+`
+
+func (q *Queries) GetSolutionCountByProblemID(ctx context.Context, problemID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getSolutionCountByProblemID, problemID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const getSolutions = `-- name: GetSolutions :many
 SELECT id, problem_id, title, description, owner_id, owner_name FROM solutions
 `

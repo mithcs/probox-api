@@ -16,3 +16,7 @@ WHERE problem_id = $1;
 -- name: GetSolutionByID :one
 SELECT id, problem_id, title, description, owner_id, owner_name FROM solutions
 WHERE id = $1 LIMIT 1;
+
+-- name: GetSolutionCountByProblemID :one
+SELECT count(*) FROM solutions
+WHERE problem_id = $1;

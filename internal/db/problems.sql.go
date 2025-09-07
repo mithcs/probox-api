@@ -43,6 +43,15 @@ func (q *Queries) CreateProblem(ctx context.Context, arg CreateProblemParams) (P
 	return i, err
 }
 
+const deleteProblemByID = `-- name: DeleteProblemByID :exec
+DELETE FROM problems WHERE id = $1
+`
+
+func (q *Queries) DeleteProblemByID(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteProblemByID, id)
+	return err
+}
+
 const getProblemByID = `-- name: GetProblemByID :one
 SELECT id, title, description, owner_id, owner_name FROM problems
 WHERE id = $1 LIMIT 1
