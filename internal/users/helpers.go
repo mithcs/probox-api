@@ -13,7 +13,7 @@ import (
 func compareUserIDWithToken(ctx context.Context, id int64) error {
 	uid, err := globals.GetUserIDFromContext(ctx)
 	if err != nil {
-		return err
+		return errors.New("Could not get User ID from context.")
 	}
 
 	if uid != id {
