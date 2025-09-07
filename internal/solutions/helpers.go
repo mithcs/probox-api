@@ -2,10 +2,7 @@ package solutions
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 
-	"github.com/go-chi/jwtauth/v5"
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 )
@@ -94,20 +91,6 @@ func storeSolution(ctx context.Context, solution SolutionToStore) (db.Solution, 
 	})
 
 	return s, err
-}
-
-func getUserIDFromContext(ctx context.Context) (int64, error) {
-	_, claims, err := jwtauth.FromContext(ctx)
-	if err != nil {
-		return -1, err
-	}
-
-	uid, err := strconv.ParseInt(fmt.Sprintf("%v", claims["uid"]), 10, 64)
-	if err != nil {
-		return -1, err
-	}
-
-	return uid, nil
 }
 
 func getFullNameByID(ctx context.Context, id int64) (string, error) {

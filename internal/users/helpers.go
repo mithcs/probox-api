@@ -4,17 +4,14 @@ import (
 	"context"
 	"crypto/rand"
 	"errors"
-	"fmt"
-	"strconv"
 
-	"github.com/go-chi/jwtauth/v5"
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func compareUserIDWithToken(ctx context.Context, id int64) error {
-	uid, err := getUserIDFromContext(ctx)
+	uid, err := globals.GetUserIDFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -24,18 +21,6 @@ func compareUserIDWithToken(ctx context.Context, id int64) error {
 	}
 
 	return nil
-}
-
-func getUserIDFromContext(ctx context.Context) (int64, error) {
-	_, claims, err := jwtauth.FromContext(ctx)
-	if err != nil {
-		return -1, err
-	}
-
-	uid_s := fmt.Sprintf("%v", claims["uid"])
-	uid, err := strconv.ParseInt(uid_s, 10, 64)
-
-	return uid, err
 }
 
 func deleteUserByID(ctx context.Context, id int64) error {

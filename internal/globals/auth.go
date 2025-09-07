@@ -1,8 +1,11 @@
 package globals
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/jwtauth/v5"
@@ -61,6 +64,18 @@ func generateToken(userID int64, auth *jwtauth.JWTAuth) (string, error) {
 	}
 
 	return token, err
+}
+
+func GetUserIDFromContext(ctx context.Context) (int64, error) {
+	_, claims, err := jwtauth.FromContext(ctx)
+	if err != nil {
+		return -1, err
+	}
+
+	uid_s := fmt.Sprintf("%v", claims["uid"])
+	uid, err := strconv.ParseInt(uid_s, 10, 64)
+
+	return uid, err
 }
 
 func AuthenticatorMiddleware(ja *jwtauth.JWTAuth) func(http.Handler) http.Handler {

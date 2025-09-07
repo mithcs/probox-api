@@ -147,7 +147,7 @@ func CreateSolution(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uid, err := getUserIDFromContext(r.Context())
+	uid, err := globals.GetUserIDFromContext(r.Context())
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusInternalServerError,
