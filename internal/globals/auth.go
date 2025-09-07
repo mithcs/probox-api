@@ -66,16 +66,28 @@ func generateToken(userID int64, auth *jwtauth.JWTAuth) (string, error) {
 	return token, err
 }
 
-func GetUserIDFromContext(ctx context.Context) (int64, error) {
+func GetUserIDFromContext(ctx context.Context) (int64, *HTTPError) {
 	_, claims, err := jwtauth.FromContext(ctx)
 	if err != nil {
-		return -1, err
+		return -1, &HTTPError{
+			Status:      http.StatusInternalServerError,
+			Title:       "Invalid Token.",
+			Description: "Could not get claims from token.",
+		}
 	}
 
 	uid_s := fmt.Sprintf("%v", claims["uid"])
-	uid, err := strconv.ParseInt(uid_s, 10, 64)
 
-	return uid, err
+	uid, err := strconv.ParseInt(uid_s, 10, 64)
+	if err != nil {
+		return -1, &HTTPError{
+			Status:      http.StatusInternalServerError,
+			Title:       "Invalid Token.",
+			Description: "Invalid user id in token.",
+		}
+	}
+
+	return uid, nil
 }
 
 func AuthenticatorMiddleware(ja *jwtauth.JWTAuth) func(http.Handler) http.Handler {
@@ -84,20 +96,20 @@ func AuthenticatorMiddleware(ja *jwtauth.JWTAuth) func(http.Handler) http.Handle
 			token, _, err := jwtauth.FromContext(r.Context())
 
 			if err != nil {
-				WriteErrorResponse(w, Error{
-					Status:  http.StatusUnauthorized,
-					Title:   "Bad Request.",
-					Details: err.Error(),
+				WriteErrorResponse(w, &HTTPError{
+					Status:      http.StatusUnauthorized,
+					Title:       "Unauthorized Action.",
+					Description: err.Error(),
 				})
 
 				return
 			}
 
 			if token == nil {
-				WriteErrorResponse(w, Error{
-					Status:  http.StatusUnauthorized,
-					Title:   "Bad Request.",
-					Details: "Token is empty.",
+				WriteErrorResponse(w, &HTTPError{
+					Status:      http.StatusUnauthorized,
+					Title:       "Unauthorized Action.",
+					Description: "Token is empty.",
 				})
 
 				return
