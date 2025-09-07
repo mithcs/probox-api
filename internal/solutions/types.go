@@ -3,6 +3,7 @@ package solutions
 import (
 	"context"
 	"errors"
+	"net/http"
 
 	"github.com/mithcs/probox-api/internal/globals"
 )
@@ -47,17 +48,29 @@ type SolutionToStore struct {
 	OwnerName   string `json:"owner_name"`
 }
 
-func (solution *CreateSolutionRequest) Validate(ctx context.Context) error {
+func (solution *CreateSolutionRequest) Validate(ctx context.Context) *globals.HTTPError {
 	if err := validateProblemID(ctx, solution.ProblemID); err != nil {
-		return err
+		return &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Invalid Problem ID.",
+			Description: "No problem exist with this id.",
+		}
 	}
 
 	if err := validateTitle(solution.Title); err != nil {
-		return err
+		return &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Invalid Title.",
+			Description: "Title does not meet requirements.",
+		}
 	}
 
 	if err := validateDescription(solution.Description); err != nil {
-		return err
+		return &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Invalid Description.",
+			Description: "Description does not meet requirements.",
+		}
 	}
 
 	return nil

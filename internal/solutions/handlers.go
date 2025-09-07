@@ -1,46 +1,28 @@
 package solutions
 
 import (
-	"encoding/json"
 	"net/http"
-	"strconv"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/mithcs/probox-api/internal/globals"
 )
 
 func GetSolution(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	id, err := getIDFromRequest(r)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: "Invalid Solution ID.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	// TODO: solution might not exist
 	solution, err := getSolutionByID(r.Context(), id)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not get solution.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
-	response, err := json.Marshal(solution)
+	response, err := globals.EncodeJson(solution)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not list solution.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -55,22 +37,14 @@ func GetSolutions(w http.ResponseWriter, r *http.Request) {
 
 	solutions, err := getAllSolutions(r.Context())
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not get all solutions.",
-		})
+		globals.WriteErrorResponse(w, err)
 
 		return
 	}
 
-	response, err := json.Marshal(solutions)
+	response, err := globals.EncodeJson(solutions)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not list all solutions.",
-		})
+		globals.WriteErrorResponse(w, err)
 
 		return
 	}
@@ -79,46 +53,22 @@ func GetSolutions(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetSolutionsForProblem(w http.ResponseWriter, r *http.Request, problemID string) {
-	pid, err := strconv.ParseInt(problemID, 10, 64)
+	pid, err := getIDFromRequest(r)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: "Invalid Problem ID.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	solutions, err := getSolutionsByProblemID(r.Context(), pid)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: err.Error(),
-		})
+		globals.WriteErrorResponse(w, err)
 
 		return
 	}
 
-	if len(solutions) == 0 {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusNoContent,
-			Title:   "No Content.",
-			Details: "There are no solutions to list.",
-		})
-
-		return
-	}
-
-	response, err := json.Marshal(solutions)
+	response, err := globals.EncodeJson(solutions)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not list all solutions.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -128,45 +78,26 @@ func GetSolutionsForProblem(w http.ResponseWriter, r *http.Request, problemID st
 func CreateSolution(w http.ResponseWriter, r *http.Request) {
 	solution, err := globals.ParseBody[CreateSolutionRequest](r.Body)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: "Could not parse body.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	err = solution.Validate(r.Context())
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: err.Error(),
-		})
+		globals.WriteErrorResponse(w, err)
 
 		return
 	}
 
 	uid, err := globals.GetUserIDFromContext(r.Context())
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not get User ID from token.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	name, err := getFullNameByID(r.Context(), uid)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not get Full Name from User ID.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -178,12 +109,7 @@ func CreateSolution(w http.ResponseWriter, r *http.Request) {
 		OwnerName:   name,
 	})
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not store solution.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -196,14 +122,9 @@ func CreateSolution(w http.ResponseWriter, r *http.Request) {
 		OwnerName:   s.OwnerName,
 	}
 
-	response, err := json.Marshal(solutionRes)
+	response, err := globals.EncodeJson(solutionRes)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not return created problem.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
