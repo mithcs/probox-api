@@ -22,12 +22,6 @@ func getProblemByID(ctx context.Context, problemID int64) (GetProblemResponse, e
 	return problem, err
 }
 
-func getProblemByIDFromDB(ctx context.Context, problemID int64) (db.Problem, error) {
-	problem, err := globals.Queries.GetProblemByID(ctx, problemID)
-
-	return problem, err
-}
-
 func getAllProblems(ctx context.Context) ([]GetProblemResponse, error) {
 	problemRows, err := getProblemsFromDB(ctx)
 	if err != nil {
@@ -48,29 +42,12 @@ func getAllProblems(ctx context.Context) ([]GetProblemResponse, error) {
 	return problems, nil
 }
 
-func getProblemsFromDB(ctx context.Context) ([]db.Problem, error) {
-	problemRows, err := globals.Queries.GetProblems(ctx)
-
-	return problemRows, err
-}
-
 func storeProblem(ctx context.Context, problem ProblemToStore) (db.Problem, error) {
-	p, err := globals.Queries.CreateProblem(ctx, db.CreateProblemParams{
-		Title:       problem.Title,
-		Description: problem.Description,
-		OwnerID:     problem.OwnerID,
-		OwnerName:   problem.OwnerName,
-	})
-
-	return p, err
+	return storeProblemInDB(ctx, problem)
 }
 
 func getFullNameByID(ctx context.Context, id int64) (string, error) {
 	return getFullNameByIDFromDB(ctx, id)
-}
-
-func getFullNameByIDFromDB(ctx context.Context, id int64) (string, error) {
-	return globals.Queries.GetFullNameByID(ctx, id)
 }
 
 func canDeleteProblem(ctx context.Context, problem GetProblemResponse) error {
@@ -90,10 +67,6 @@ func getSolutionCountForProblem(ctx context.Context, id int64) (int64, error) {
 	return getSolutionCountForProblemFromDB(ctx, id)
 }
 
-func getSolutionCountForProblemFromDB(ctx context.Context, id int64) (int64, error) {
-	return globals.Queries.GetSolutionCountByProblemID(ctx, id)
-}
-
 func compareUserIDWithToken(ctx context.Context, id int64) error {
 	uid, err := globals.GetUserIDFromContext(ctx)
 	if err != nil {
@@ -109,8 +82,4 @@ func compareUserIDWithToken(ctx context.Context, id int64) error {
 
 func deleteProblemByID(ctx context.Context, id int64) error {
 	return deleteProblemByIDFromDB(ctx, id)
-}
-
-func deleteProblemByIDFromDB(ctx context.Context, id int64) error {
-	return globals.Queries.DeleteProblemByID(ctx, id)
 }
