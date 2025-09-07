@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/go-chi/jwtauth/v5"
@@ -12,41 +13,42 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func generateTokens(userID int64) (CreateTokensResponse, error) {
+func generateTokens(userID int64) (CreateTokensResponse, *globals.HTTPError) {
 	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userID)
+	if err != nil {
+		return CreateTokensResponse{}, &globals.HTTPError{
+			Status:      http.StatusInternalServerError,
+			Title:       "Token Generation Error.",
+			Description: "Could not generate access and refresh tokens.",
+		}
+	}
 
 	tokens := CreateTokensResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}
 
-	return tokens, err
+	return tokens, nil
 }
 
-func retrieveUserID(ctx context.Context) (int64, error) {
+func retrieveUserID(ctx context.Context) (int64, *globals.HTTPError) {
 	_, claims, err := jwtauth.FromContext(ctx)
 	if err != nil {
-		return 0, err
+		return -1, &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Invalid Token.",
+			Description: "Could not get user id from token.",
+		}
 	}
 
 	userID, err := strconv.ParseInt(fmt.Sprintf("%v", claims["uid"]), 10, 64)
-
-	return userID, err
-}
-
-func verifyCredentials(ctx context.Context, username string, password string) (int64, error) {
-	user, err := globals.Queries.GetCredentialsByUsername(ctx, username)
-	if err == sql.ErrNoRows {
-		return 0, errors.New("Incorrect Username.")
-	}
 	if err != nil {
-		return 0, errors.New("Invalid Credentials.")
+		return -1, &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Invalid Token.",
+			Description: "Could not parse user id.",
+		}
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if err != nil {
-		return 0, errors.New("Incorrect Password.")
-	}
-
-	return user.ID, nil
+	return userID, nil
 }

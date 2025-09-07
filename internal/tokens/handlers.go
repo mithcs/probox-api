@@ -1,7 +1,6 @@
 package tokens
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/mithcs/probox-api/internal/globals"
@@ -10,45 +9,25 @@ import (
 func CreateTokens(w http.ResponseWriter, r *http.Request) {
 	creds, err := globals.ParseBody[CreateTokensRequest](r.Body)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: "Could not parse body.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	userID, err := creds.Verify(r.Context())
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: err.Error(),
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	tokens, err := generateTokens(userID)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not generate tokens for you.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
-	response, err := json.Marshal(tokens)
+	response, err := globals.EncodeJson(tokens)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not give you tokens.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -58,35 +37,19 @@ func CreateTokens(w http.ResponseWriter, r *http.Request) {
 func RefreshTokens(w http.ResponseWriter, r *http.Request) {
 	userID, err := retrieveUserID(r.Context())
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: "You are not authorized",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	tokens, err := generateTokens(userID)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not generate tokens for you.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
-	response, err := json.Marshal(tokens)
+	response, err := globals.EncodeJson(tokens)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not give you tokens.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
