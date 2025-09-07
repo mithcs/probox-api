@@ -147,7 +147,35 @@ func CreateSolution(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := storeSolution(r.Context(), solution)
+	uid, err := getUserIDFromContext(r.Context())
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not get User ID from token.",
+		})
+
+		return
+	}
+
+	name, err := getFullNameByID(r.Context(), uid)
+	if err != nil {
+		globals.WriteErrorResponse(w, globals.Error{
+			Status:  http.StatusInternalServerError,
+			Title:   "Server Error.",
+			Details: "Could not get Full Name from User ID.",
+		})
+
+		return
+	}
+
+	s, err := storeSolution(r.Context(), SolutionToStore{
+		ProblemID:   solution.ProblemID,
+		Title:       solution.Title,
+		Description: solution.Description,
+		OwnerID:     uid,
+		OwnerName:   name,
+	})
 	if err != nil {
 		globals.WriteErrorResponse(w, globals.Error{
 			Status:  http.StatusInternalServerError,

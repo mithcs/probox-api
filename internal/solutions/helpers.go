@@ -2,7 +2,10 @@ package solutions
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 )
@@ -15,6 +18,8 @@ func getSolutionByID(ctx context.Context, solutionID int64) (GetSolutionResponse
 		ProblemID:   p.ProblemID,
 		Title:       p.Title,
 		Description: p.Description,
+		OwnerID:     p.OwnerID,
+		OwnerName:   p.OwnerName,
 	}
 
 	return solution, err
@@ -39,6 +44,8 @@ func getAllSolutions(ctx context.Context) ([]GetSolutionResponse, error) {
 			ProblemID:   solutionRow.ProblemID,
 			Title:       solutionRow.Title,
 			Description: solutionRow.Description,
+			OwnerID:     solutionRow.OwnerID,
+			OwnerName:   solutionRow.OwnerName,
 		})
 	}
 
@@ -63,6 +70,8 @@ func getSolutionsByProblemID(ctx context.Context, problemID int64) ([]GetSolutio
 			ID:          solutionRow.ID,
 			Title:       solutionRow.Title,
 			Description: solutionRow.Description,
+			OwnerID:     solutionRow.OwnerID,
+			OwnerName:   solutionRow.OwnerName,
 		})
 	}
 
@@ -75,12 +84,36 @@ func getSolutionsByProblemIDFromDB(ctx context.Context, problemID int64) ([]db.S
 	return solutionRows, err
 }
 
-func storeSolution(ctx context.Context, solution CreateSolutionRequest) (db.Solution, error) {
+func storeSolution(ctx context.Context, solution SolutionToStore) (db.Solution, error) {
 	s, err := globals.Queries.CreateSolution(ctx, db.CreateSolutionParams{
 		ProblemID:   solution.ProblemID,
 		Title:       solution.Title,
 		Description: solution.Description,
+		OwnerID:     solution.OwnerID,
+		OwnerName:   solution.OwnerName,
 	})
 
 	return s, err
+}
+
+func getUserIDFromContext(ctx context.Context) (int64, error) {
+	_, claims, err := jwtauth.FromContext(ctx)
+	if err != nil {
+		return -1, err
+	}
+
+	uid, err := strconv.ParseInt(fmt.Sprintf("%v", claims["uid"]), 10, 64)
+	if err != nil {
+		return -1, err
+	}
+
+	return uid, nil
+}
+
+func getFullNameByID(ctx context.Context, id int64) (string, error) {
+	return getFullNameByIDFromDB(ctx, id)
+}
+
+func getFullNameByIDFromDB(ctx context.Context, id int64) (string, error) {
+	return globals.Queries.GetFullNameByID(ctx, id)
 }
