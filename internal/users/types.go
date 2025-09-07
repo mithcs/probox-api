@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 	"errors"
+	"net/http"
 	"regexp"
 
 	"github.com/mithcs/probox-api/internal/globals"
@@ -26,21 +27,37 @@ type CreateUserResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func (user *CreateUserRequest) Validate(ctx context.Context) error {
+func (user *CreateUserRequest) Validate(ctx context.Context) *globals.HTTPError {
 	if err := validateUsername(user.Username); err != nil {
-		return err
+		return &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Invalid Username.",
+			Description: "Username does not match requirements.",
+		}
 	}
 
 	if err := validatePassword(user.Password); err != nil {
-		return err
+		return &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Invalid Password.",
+			Description: "Password is not secure enough.",
+		}
 	}
 
 	if err := validateFullName(user.FullName); err != nil {
-		return err
+		return &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Invalid Fullname.",
+			Description: "Fullname does not match requirements.",
+		}
 	}
 
 	if exists := usernameExists(ctx, user.Username); exists {
-		return errors.New("Username already exists.")
+		return &globals.HTTPError{
+			Status:      http.StatusBadRequest,
+			Title:       "Invalid Username",
+			Description: "Username is already occupied.",
+		}
 	}
 
 	return nil
@@ -62,7 +79,7 @@ func validateUsername(username string) error {
 func validatePassword(password string) error {
 	err := validator.Validate(password, 60)
 	if err != nil {
-		return errors.New("Password is Insecure.")
+		return err
 	}
 
 	return nil
@@ -75,7 +92,7 @@ func validateFullName(fullname string) error {
 	// max 24 chars
 	r := regexp.MustCompile(`^[A-Za-z][A-Za-z ]{1,22}[A-Za-z]$`)
 	if !r.MatchString(fullname) {
-		return errors.New("Invalid Username.")
+		return errors.New("Invalid Fullname.")
 	}
 
 	return nil

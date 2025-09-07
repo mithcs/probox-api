@@ -30,7 +30,7 @@ func ParseBody[T any](body io.ReadCloser) (T, *HTTPError) {
 	return v, nil
 }
 
-func GetJson(v any) ([]byte, *HTTPError) {
+func EncodeJson(v any) ([]byte, *HTTPError) {
 	json, err := json.Marshal(v)
 	if err != nil {
 		return []byte(""), &HTTPError{

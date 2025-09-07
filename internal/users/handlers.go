@@ -1,7 +1,6 @@
 package users
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"strconv"
@@ -11,36 +10,21 @@ import (
 )
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	id, err := getIDFromRequest(r)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: "Invalid User ID.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	err = compareUserIDWithToken(r.Context(), id)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusUnauthorized,
-			Title:   "Unauthorized Action.",
-			Details: err.Error(),
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	err = deleteUserByID(r.Context(), id)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not delete user.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -59,23 +43,13 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 func GetUserByID(w http.ResponseWriter, r *http.Request, id int64) {
 	user, err := getUserByID(r.Context(), id)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: "Could not get user.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
-	response, err := json.Marshal(user)
+	response, err := globals.EncodeJson(user)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not list user.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -85,23 +59,13 @@ func GetUserByID(w http.ResponseWriter, r *http.Request, id int64) {
 func GetUserByUsername(w http.ResponseWriter, r *http.Request, username string) {
 	user, err := getUserByUsername(r.Context(), username)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: "Could not get user.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
-	response, err := json.Marshal(user)
+	response, err := globals.EncodeJson(user)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not list user.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -111,23 +75,13 @@ func GetUserByUsername(w http.ResponseWriter, r *http.Request, username string) 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := getAllUsers(r.Context())
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not get all users.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
-	response, err := json.Marshal(users)
+	response, err := globals.EncodeJson(users)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not list all users.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -137,67 +91,37 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	user, err := globals.ParseBody[CreateUserRequest](r.Body)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: "Could not parse body.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	err = user.Validate(r.Context())
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusBadRequest,
-			Title:   "Bad Request.",
-			Details: err.Error(),
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	hashedPass, err := hashPass(user.Password)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not hash your password.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	userID, err := storeUser(r.Context(), user.Username, hashedPass, user.FullName)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not store credentials.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
 	tokens, err := generateTokens(userID)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not generate tokens for you.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
-	response, err := json.Marshal(tokens)
+	response, err := globals.EncodeJson(tokens)
 	if err != nil {
-		globals.WriteErrorResponse(w, globals.Error{
-			Status:  http.StatusInternalServerError,
-			Title:   "Server Error.",
-			Details: "Could not give you tokens.",
-		})
-
+		globals.WriteErrorResponse(w, err)
 		return
 	}
 
