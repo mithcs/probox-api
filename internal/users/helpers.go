@@ -24,7 +24,7 @@ func compareUserIDWithToken(ctx context.Context, id int64) *globals.HTTPError {
 	if uid != id {
 		return &globals.HTTPError{
 			Status:      http.StatusBadRequest,
-			Title:       "Unauthorized.",
+			Title:       "Unauthorized Action.",
 			Description: "Not authorized to delete this user.",
 		}
 	}

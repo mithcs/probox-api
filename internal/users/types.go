@@ -32,7 +32,7 @@ func (user *CreateUserRequest) Validate(ctx context.Context) *globals.HTTPError 
 		return &globals.HTTPError{
 			Status:      http.StatusBadRequest,
 			Title:       "Invalid Username.",
-			Description: "Username does not match requirements.",
+			Description: "Username does not meet requirements.",
 		}
 	}
 
@@ -48,7 +48,7 @@ func (user *CreateUserRequest) Validate(ctx context.Context) *globals.HTTPError 
 		return &globals.HTTPError{
 			Status:      http.StatusBadRequest,
 			Title:       "Invalid Fullname.",
-			Description: "Fullname does not match requirements.",
+			Description: "Fullname does not meet requirements.",
 		}
 	}
 
