@@ -35,13 +35,13 @@ func CreateTokens(w http.ResponseWriter, r *http.Request) {
 }
 
 func RefreshTokens(w http.ResponseWriter, r *http.Request) {
-	userID, err := retrieveUserID(r.Context())
+	uid, err := globals.GetUserIDFromContext(r.Context())
 	if err != nil {
 		globals.WriteErrorResponse(w, err)
 		return
 	}
 
-	tokens, err := generateTokens(userID)
+	tokens, err := generateTokens(uid)
 	if err != nil {
 		globals.WriteErrorResponse(w, err)
 		return

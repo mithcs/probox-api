@@ -5,33 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"strconv"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/mithcs/probox-api/internal/globals"
 	"golang.org/x/crypto/bcrypt"
 )
-
-func compareUserIDWithToken(ctx context.Context, id int64) *globals.HTTPError {
-	uid, err := globals.GetUserIDFromContext(ctx)
-	if err != nil {
-		return &globals.HTTPError{
-			Status: http.StatusInternalServerError,
-			Title:  "Invalid User ID.",
-			Err:    errors.New("Could not get user id from token."),
-		}
-	}
-
-	if uid != id {
-		return &globals.HTTPError{
-			Status: http.StatusBadRequest,
-			Title:  "Unauthorized Action.",
-			Err:    errors.New("Not authorized to delete this user."),
-		}
-	}
-
-	return nil
-}
 
 func deleteUserByID(ctx context.Context, id int64) *globals.HTTPError {
 	err := deleteUserByIDFromDB(ctx, id)
@@ -141,7 +118,7 @@ func storeUser(ctx context.Context, username string, password string, fullname s
 }
 
 func generateTokens(userID int64) (CreateUserResponse, *globals.HTTPError) {
-	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userID)
+	accessToken, refreshToken, err := globals.GenerateTokens(userID)
 	if err != nil {
 		return CreateUserResponse{}, &globals.HTTPError{
 			Status: http.StatusInternalServerError,
@@ -156,17 +133,4 @@ func generateTokens(userID int64) (CreateUserResponse, *globals.HTTPError) {
 	}
 
 	return tokens, nil
-}
-
-func getIDFromRequest(r *http.Request) (int64, *globals.HTTPError) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-	if err != nil {
-		return -1, &globals.HTTPError{
-			Status: http.StatusBadRequest,
-			Title:  "Invalid ID.",
-			Err:    errors.New("Could not parse id."),
-		}
-	}
-
-	return id, nil
 }

@@ -10,13 +10,13 @@ import (
 )
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	id, err := getIDFromRequest(r)
+	id, err := globals.GetIDFromRequest(r)
 	if err != nil {
 		globals.WriteErrorResponse(w, err)
 		return
 	}
 
-	err = compareUserIDWithToken(r.Context(), id)
+	err = globals.VerifyUIDWithToken(r.Context(), id)
 	if err != nil {
 		globals.WriteErrorResponse(w, err)
 		return

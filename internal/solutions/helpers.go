@@ -5,9 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"strconv"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 )
@@ -131,17 +129,4 @@ func getFullNameByID(ctx context.Context, id int64) (string, *globals.HTTPError)
 	}
 
 	return name, nil
-}
-
-func getIDFromRequest(r *http.Request) (int64, *globals.HTTPError) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-	if err != nil {
-		return -1, &globals.HTTPError{
-			Status: http.StatusBadRequest,
-			Title:  "Invalid ID.",
-			Err:    errors.New("Could not parse id."),
-		}
-	}
-
-	return id, nil
 }

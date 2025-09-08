@@ -25,7 +25,7 @@ func init() {
 	RefreshTokenAuth = jwtauth.New(rtAlg, []byte(rtSignKey), nil)
 }
 
-func GenerateAccessAndRefreshTokens(userID int64) (string, string, error) {
+func GenerateTokens(userID int64) (string, string, error) {
 	accessToken, err := GenerateAccessToken(userID)
 	if err != nil {
 		return "", "", err

@@ -7,7 +7,7 @@ import (
 )
 
 func GetSolution(w http.ResponseWriter, r *http.Request) {
-	id, err := getIDFromRequest(r)
+	id, err := globals.GetIDFromRequest(r)
 	if err != nil {
 		globals.WriteErrorResponse(w, err)
 		return
@@ -53,7 +53,7 @@ func GetSolutions(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetSolutionsForProblem(w http.ResponseWriter, r *http.Request, problemID string) {
-	pid, err := getIDFromRequest(r)
+	pid, err := globals.GetIDFromRequest(r)
 	if err != nil {
 		globals.WriteErrorResponse(w, err)
 		return
