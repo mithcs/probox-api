@@ -3,6 +3,7 @@ package tokens
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/mithcs/probox-api/internal/globals"
@@ -38,25 +39,25 @@ func verifyCredentials(ctx context.Context, username string, password string) (i
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return -1, &globals.HTTPError{
-				Status:      http.StatusBadRequest,
-				Title:       "Incorrect Username.",
-				Description: "No user exists with username.",
+				Status: http.StatusBadRequest,
+				Title:  "Incorrect Username.",
+				Err:    errors.New("No user exists with username."),
 			}
 		}
 
 		return -1, &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not get user information from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get user information from database."),
 		}
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		return -1, &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Incorrect Password.",
-			Description: "Password does not match.",
+			Status: http.StatusBadRequest,
+			Title:  "Incorrect Password.",
+			Err:    errors.New("Password does not match."),
 		}
 	}
 

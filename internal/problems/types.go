@@ -38,17 +38,17 @@ type ProblemToStore struct {
 func (problem *CreateProblemRequest) Validate() *globals.HTTPError {
 	if err := validateTitle(problem.Title); err != nil {
 		return &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Invalid Title.",
-			Description: "Title does not meet requirements.",
+			Status: http.StatusBadRequest,
+			Title:  "Invalid Title.",
+			Err:    errors.New("Title does not meet requirements."),
 		}
 	}
 
 	if err := validateDescription(problem.Description); err != nil {
 		return &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Invalid Description.",
-			Description: "Description does not meet requirements.",
+			Status: http.StatusBadRequest,
+			Title:  "Invalid Description.",
+			Err:    errors.New("Description does not meet requirements."),
 		}
 	}
 

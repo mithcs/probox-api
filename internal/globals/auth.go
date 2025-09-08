@@ -2,6 +2,7 @@ package globals
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -70,9 +71,9 @@ func GetUserIDFromContext(ctx context.Context) (int64, *HTTPError) {
 	_, claims, err := jwtauth.FromContext(ctx)
 	if err != nil {
 		return -1, &HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Invalid Token.",
-			Description: "Could not get claims from token.",
+			Status: http.StatusInternalServerError,
+			Title:  "Invalid Token.",
+			Err:    errors.New("Could not get claims from token."),
 		}
 	}
 
@@ -81,9 +82,9 @@ func GetUserIDFromContext(ctx context.Context) (int64, *HTTPError) {
 	uid, err := strconv.ParseInt(uid_s, 10, 64)
 	if err != nil {
 		return -1, &HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Invalid Token.",
-			Description: "Invalid user id in token.",
+			Status: http.StatusInternalServerError,
+			Title:  "Invalid Token.",
+			Err:    errors.New("Invalid user id in token."),
 		}
 	}
 
@@ -97,9 +98,9 @@ func AuthenticatorMiddleware(ja *jwtauth.JWTAuth) func(http.Handler) http.Handle
 
 			if err != nil {
 				WriteErrorResponse(w, &HTTPError{
-					Status:      http.StatusUnauthorized,
-					Title:       "Unauthorized Action.",
-					Description: err.Error(),
+					Status: http.StatusUnauthorized,
+					Title:  "Unauthorized Action.",
+					Err:    err,
 				})
 
 				return
@@ -107,9 +108,9 @@ func AuthenticatorMiddleware(ja *jwtauth.JWTAuth) func(http.Handler) http.Handle
 
 			if token == nil {
 				WriteErrorResponse(w, &HTTPError{
-					Status:      http.StatusUnauthorized,
-					Title:       "Unauthorized Action.",
-					Description: "Token is empty.",
+					Status: http.StatusUnauthorized,
+					Title:  "Unauthorized Action.",
+					Err:    errors.New("Token is empty."),
 				})
 
 				return

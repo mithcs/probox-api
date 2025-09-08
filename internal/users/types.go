@@ -30,33 +30,33 @@ type CreateUserResponse struct {
 func (user *CreateUserRequest) Validate(ctx context.Context) *globals.HTTPError {
 	if err := validateUsername(user.Username); err != nil {
 		return &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Invalid Username.",
-			Description: "Username does not meet requirements.",
+			Status: http.StatusBadRequest,
+			Title:  "Invalid Username.",
+			Err:    errors.New("Username does not meet requirements."),
 		}
 	}
 
 	if err := validatePassword(user.Password); err != nil {
 		return &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Invalid Password.",
-			Description: "Password is not secure enough.",
+			Status: http.StatusBadRequest,
+			Title:  "Invalid Password.",
+			Err:    errors.New("Password is not secure enough."),
 		}
 	}
 
 	if err := validateFullName(user.FullName); err != nil {
 		return &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Invalid Fullname.",
-			Description: "Fullname does not meet requirements.",
+			Status: http.StatusBadRequest,
+			Title:  "Invalid Fullname.",
+			Err:    errors.New("Fullname does not meet requirements."),
 		}
 	}
 
 	if exists := usernameExists(ctx, user.Username); exists {
 		return &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Invalid Username",
-			Description: "Username is already occupied.",
+			Status: http.StatusBadRequest,
+			Title:  "Invalid Username",
+			Err:    errors.New("Username is already occupied."),
 		}
 	}
 

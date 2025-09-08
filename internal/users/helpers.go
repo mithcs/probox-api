@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -15,17 +16,17 @@ func compareUserIDWithToken(ctx context.Context, id int64) *globals.HTTPError {
 	uid, err := globals.GetUserIDFromContext(ctx)
 	if err != nil {
 		return &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Invalid User ID.",
-			Description: "Could not get user id from token.",
+			Status: http.StatusInternalServerError,
+			Title:  "Invalid User ID.",
+			Err:    errors.New("Could not get user id from token."),
 		}
 	}
 
 	if uid != id {
 		return &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Unauthorized Action.",
-			Description: "Not authorized to delete this user.",
+			Status: http.StatusBadRequest,
+			Title:  "Unauthorized Action.",
+			Err:    errors.New("Not authorized to delete this user."),
 		}
 	}
 
@@ -36,9 +37,9 @@ func deleteUserByID(ctx context.Context, id int64) *globals.HTTPError {
 	err := deleteUserByIDFromDB(ctx, id)
 	if err != nil {
 		return &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not get user from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get user from database."),
 		}
 	}
 
@@ -49,9 +50,9 @@ func getUserByID(ctx context.Context, id int64) (GetUserResponse, *globals.HTTPE
 	userRows, err := getUserByIDFromDB(ctx, id)
 	if err != nil {
 		return GetUserResponse{}, &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not get user from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get user from database."),
 		}
 	}
 
@@ -68,9 +69,9 @@ func getUserByUsername(ctx context.Context, username string) (GetUserResponse, *
 	userRows, err := getUserByUsernameFromDB(ctx, username)
 	if err != nil {
 		return GetUserResponse{}, &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not get user from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get user from database."),
 		}
 	}
 
@@ -88,16 +89,16 @@ func getAllUsers(ctx context.Context) ([]GetUserResponse, *globals.HTTPError) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return []GetUserResponse{}, &globals.HTTPError{
-				Status:      http.StatusNoContent,
-				Title:       "No Content.",
-				Description: "No users to show.",
+				Status: http.StatusNoContent,
+				Title:  "No Content.",
+				Err:    errors.New("No users to show."),
 			}
 		}
 
 		return []GetUserResponse{}, &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not get users from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get users from database."),
 		}
 	}
 
@@ -117,9 +118,9 @@ func hashPass(pass string) (string, *globals.HTTPError) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
 	if err != nil {
 		return "", &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Hashing Error.",
-			Description: "Could not hash password.",
+			Status: http.StatusInternalServerError,
+			Title:  "Hashing Error.",
+			Err:    errors.New("Could not hash password."),
 		}
 	}
 
@@ -130,9 +131,9 @@ func storeUser(ctx context.Context, username string, password string, fullname s
 	id, err := storeUserInDB(ctx, username, password, fullname)
 	if err != nil {
 		return -1, &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not store user in database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not store user in database."),
 		}
 	}
 
@@ -143,9 +144,9 @@ func generateTokens(userID int64) (CreateUserResponse, *globals.HTTPError) {
 	accessToken, refreshToken, err := globals.GenerateAccessAndRefreshTokens(userID)
 	if err != nil {
 		return CreateUserResponse{}, &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Token Generation Error.",
-			Description: "Could not generate access and refresh tokens.",
+			Status: http.StatusInternalServerError,
+			Title:  "Token Generation Error.",
+			Err:    errors.New("Could not generate access and refresh tokens."),
 		}
 	}
 
@@ -161,9 +162,9 @@ func getIDFromRequest(r *http.Request) (int64, *globals.HTTPError) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		return -1, &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Invalid ID.",
-			Description: "Could not parse id.",
+			Status: http.StatusBadRequest,
+			Title:  "Invalid ID.",
+			Err:    errors.New("Could not parse id."),
 		}
 	}
 

@@ -43,25 +43,25 @@ type SolutionToStore struct {
 func (solution *CreateSolutionRequest) Validate(ctx context.Context) *globals.HTTPError {
 	if err := validateProblemID(ctx, solution.ProblemID); err != nil {
 		return &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Invalid Problem ID.",
-			Description: "No problem exist with this id.",
+			Status: http.StatusBadRequest,
+			Title:  "Invalid Problem ID.",
+			Err:    errors.New("No problem exist with this id."),
 		}
 	}
 
 	if err := validateTitle(solution.Title); err != nil {
 		return &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Invalid Title.",
-			Description: "Title does not meet requirements.",
+			Status: http.StatusBadRequest,
+			Title:  "Invalid Title.",
+			Err:    errors.New("Title does not meet requirements."),
 		}
 	}
 
 	if err := validateDescription(solution.Description); err != nil {
 		return &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Invalid Description.",
-			Description: "Description does not meet requirements.",
+			Status: http.StatusBadRequest,
+			Title:  "Invalid Description.",
+			Err:    errors.New("Description does not meet requirements."),
 		}
 	}
 

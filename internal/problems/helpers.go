@@ -3,6 +3,7 @@ package problems
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -16,16 +17,16 @@ func getProblemByID(ctx context.Context, problemID int64) (GetProblemResponse, *
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return GetProblemResponse{}, &globals.HTTPError{
-				Status:      http.StatusNoContent,
-				Title:       "No Content.",
-				Description: "No problem to show.",
+				Status: http.StatusNoContent,
+				Title:  "No Content.",
+				Err:    errors.New("No problem to show."),
 			}
 		}
 
 		return GetProblemResponse{}, &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not get problem from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get problem from database."),
 		}
 	}
 
@@ -45,16 +46,16 @@ func getAllProblems(ctx context.Context) ([]GetProblemResponse, *globals.HTTPErr
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return []GetProblemResponse{}, &globals.HTTPError{
-				Status:      http.StatusNoContent,
-				Title:       "No Content.",
-				Description: "No problems to show.",
+				Status: http.StatusNoContent,
+				Title:  "No Content.",
+				Err:    errors.New("No problems to show."),
 			}
 		}
 
 		return []GetProblemResponse{}, &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not get problems from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get problems from database."),
 		}
 	}
 
@@ -76,9 +77,9 @@ func storeProblem(ctx context.Context, problem ProblemToStore) (db.Problem, *glo
 	p, err := storeProblemInDB(ctx, problem)
 	if err != nil {
 		return db.Problem{}, &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not store problem in database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not store problem in database."),
 		}
 	}
 
@@ -90,16 +91,16 @@ func getFullNameByID(ctx context.Context, id int64) (string, *globals.HTTPError)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return "", &globals.HTTPError{
-				Status:      http.StatusNoContent,
-				Title:       "No Content.",
-				Description: "No problem to show.",
+				Status: http.StatusNoContent,
+				Title:  "No Content.",
+				Err:    errors.New("No problem to show."),
 			}
 		}
 
 		return "", &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not get fullname from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get fullname from database."),
 		}
 	}
 
@@ -110,17 +111,17 @@ func canDeleteProblem(ctx context.Context, problem GetProblemResponse) *globals.
 	solutionCount, err := getSolutionCountForProblemFromDB(ctx, problem.ID)
 	if err != nil {
 		return &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not get solution count from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get solution count from database."),
 		}
 	}
 
 	if solutionCount != 0 {
 		return &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Deletion Error.",
-			Description: "Problem does not have 0 solutions.",
+			Status: http.StatusBadRequest,
+			Title:  "Deletion Error.",
+			Err:    errors.New("Problem does not have 0 solutions."),
 		}
 	}
 
@@ -131,17 +132,17 @@ func compareUserIDWithToken(ctx context.Context, id int64) *globals.HTTPError {
 	uid, err := globals.GetUserIDFromContext(ctx)
 	if err != nil {
 		return &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Invalid User ID.",
-			Description: "Could not get user id from request.",
+			Status: http.StatusBadRequest,
+			Title:  "Invalid User ID.",
+			Err:    errors.New("Could not get user id from request."),
 		}
 	}
 
 	if uid != id {
 		return &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Unauthorized Action.",
-			Description: "Not authorized to perform this action to this user.",
+			Status: http.StatusBadRequest,
+			Title:  "Unauthorized Action.",
+			Err:    errors.New("Not authorized to perform this action to this user."),
 		}
 	}
 
@@ -152,9 +153,9 @@ func deleteProblemByID(ctx context.Context, id int64) *globals.HTTPError {
 	err := deleteProblemByIDFromDB(ctx, id)
 	if err != nil {
 		return &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not get problem from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get problem from database."),
 		}
 	}
 
@@ -165,9 +166,9 @@ func getIDFromRequest(r *http.Request) (int64, *globals.HTTPError) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		return -1, &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Invalid ID.",
-			Description: "Could not parse id.",
+			Status: http.StatusBadRequest,
+			Title:  "Invalid ID.",
+			Err:    errors.New("Could not parse id."),
 		}
 	}
 

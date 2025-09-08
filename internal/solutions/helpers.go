@@ -3,6 +3,7 @@ package solutions
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -16,16 +17,16 @@ func getSolutionByID(ctx context.Context, solutionID int64) (GetSolutionResponse
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return GetSolutionResponse{}, &globals.HTTPError{
-				Status:      http.StatusNoContent,
-				Title:       "No Content.",
-				Description: "No solution to show.",
+				Status: http.StatusNoContent,
+				Title:  "No Content.",
+				Err:    errors.New("No solution to show."),
 			}
 		}
 
 		return GetSolutionResponse{}, &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not get solution from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get solution from database."),
 		}
 	}
 
@@ -46,16 +47,16 @@ func getAllSolutions(ctx context.Context) ([]GetSolutionResponse, *globals.HTTPE
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return []GetSolutionResponse{}, &globals.HTTPError{
-				Status:      http.StatusNoContent,
-				Title:       "No Content.",
-				Description: "No solution to show.",
+				Status: http.StatusNoContent,
+				Title:  "No Content.",
+				Err:    errors.New("No solution to show."),
 			}
 		}
 
 		return []GetSolutionResponse{}, &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not get solutions from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get solutions from database."),
 		}
 	}
 
@@ -79,16 +80,16 @@ func getSolutionsByProblemID(ctx context.Context, problemID int64) ([]GetSolutio
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return []GetSolutionResponse{}, &globals.HTTPError{
-				Status:      http.StatusNoContent,
-				Title:       "No Content.",
-				Description: "No solution to show.",
+				Status: http.StatusNoContent,
+				Title:  "No Content.",
+				Err:    errors.New("No solution to show."),
 			}
 		}
 
 		return []GetSolutionResponse{}, &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not get solutions for problem from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get solutions for problem from database."),
 		}
 	}
 
@@ -110,9 +111,9 @@ func storeSolution(ctx context.Context, solution SolutionToStore) (db.Solution, 
 	s, err := storeSolutionInDB(ctx, solution)
 	if err != nil {
 		return db.Solution{}, &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not store solution in database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not store solution in database."),
 		}
 	}
 
@@ -123,9 +124,9 @@ func getFullNameByID(ctx context.Context, id int64) (string, *globals.HTTPError)
 	name, err := getFullNameByIDFromDB(ctx, id)
 	if err != nil {
 		return "", &globals.HTTPError{
-			Status:      http.StatusInternalServerError,
-			Title:       "Database Error.",
-			Description: "Could not full name from database.",
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not get full name from database."),
 		}
 	}
 
@@ -136,9 +137,9 @@ func getIDFromRequest(r *http.Request) (int64, *globals.HTTPError) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		return -1, &globals.HTTPError{
-			Status:      http.StatusBadRequest,
-			Title:       "Invalid ID.",
-			Description: "Could not parse id.",
+			Status: http.StatusBadRequest,
+			Title:  "Invalid ID.",
+			Err:    errors.New("Could not parse id."),
 		}
 	}
 
