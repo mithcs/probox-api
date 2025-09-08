@@ -2,15 +2,12 @@ package tokens
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/mithcs/probox-api/internal/globals"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func generateTokens(userID int64) (CreateTokensResponse, *globals.HTTPError) {
