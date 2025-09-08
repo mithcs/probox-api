@@ -17,14 +17,6 @@ type GetSolutionResponse struct {
 	OwnerName   string `json:"owner_name"`
 }
 
-type GetSolutionsForProblemResponse struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	OwnerID     int64  `json:"owner_id"`
-	OwnerName   string `json:"owner_name"`
-}
-
 type CreateSolutionRequest struct {
 	ProblemID   int64  `json:"problem_id"`
 	Title       string `json:"title"`

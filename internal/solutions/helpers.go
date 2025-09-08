@@ -74,27 +74,27 @@ func getAllSolutions(ctx context.Context) ([]GetSolutionResponse, *globals.HTTPE
 	return solutions, nil
 }
 
-func getSolutionsByProblemID(ctx context.Context, problemID int64) ([]GetSolutionsForProblemResponse, *globals.HTTPError) {
+func getSolutionsByProblemID(ctx context.Context, problemID int64) ([]GetSolutionResponse, *globals.HTTPError) {
 	solutionRows, err := getSolutionsByProblemIDFromDB(ctx, problemID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return []GetSolutionsForProblemResponse{}, &globals.HTTPError{
+			return []GetSolutionResponse{}, &globals.HTTPError{
 				Status:      http.StatusNoContent,
 				Title:       "No Content.",
 				Description: "No solution to show.",
 			}
 		}
 
-		return []GetSolutionsForProblemResponse{}, &globals.HTTPError{
+		return []GetSolutionResponse{}, &globals.HTTPError{
 			Status:      http.StatusInternalServerError,
 			Title:       "Database Error.",
 			Description: "Could not get solutions for problem from database.",
 		}
 	}
 
-	var solutions []GetSolutionsForProblemResponse
+	var solutions []GetSolutionResponse
 	for _, solutionRow := range solutionRows {
-		solutions = append(solutions, GetSolutionsForProblemResponse{
+		solutions = append(solutions, GetSolutionResponse{
 			ID:          solutionRow.ID,
 			Title:       solutionRow.Title,
 			Description: solutionRow.Description,
