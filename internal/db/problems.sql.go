@@ -15,7 +15,7 @@ INSERT INTO problems (
 ) VALUES (
     $1, $2, $3, $4
 )
-RETURNING id, title, description, owner_id, owner_name
+RETURNING id, title, description, owner_id, owner_name, accepted_solution_id
 `
 
 type CreateProblemParams struct {
@@ -39,6 +39,7 @@ func (q *Queries) CreateProblem(ctx context.Context, arg CreateProblemParams) (P
 		&i.Description,
 		&i.OwnerID,
 		&i.OwnerName,
+		&i.AcceptedSolutionID,
 	)
 	return i, err
 }
@@ -53,7 +54,7 @@ func (q *Queries) DeleteProblemByID(ctx context.Context, id int64) error {
 }
 
 const getProblemByID = `-- name: GetProblemByID :one
-SELECT id, title, description, owner_id, owner_name FROM problems
+SELECT id, title, description, owner_id, owner_name, accepted_solution_id FROM problems
 WHERE id = $1 LIMIT 1
 `
 
@@ -66,12 +67,13 @@ func (q *Queries) GetProblemByID(ctx context.Context, id int64) (Problem, error)
 		&i.Description,
 		&i.OwnerID,
 		&i.OwnerName,
+		&i.AcceptedSolutionID,
 	)
 	return i, err
 }
 
 const getProblems = `-- name: GetProblems :many
-SELECT id, title, description, owner_id, owner_name FROM problems
+SELECT id, title, description, owner_id, owner_name, accepted_solution_id FROM problems
 `
 
 func (q *Queries) GetProblems(ctx context.Context) ([]Problem, error) {
@@ -89,6 +91,7 @@ func (q *Queries) GetProblems(ctx context.Context) ([]Problem, error) {
 			&i.Description,
 			&i.OwnerID,
 			&i.OwnerName,
+			&i.AcceptedSolutionID,
 		); err != nil {
 			return nil, err
 		}

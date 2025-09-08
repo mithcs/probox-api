@@ -4,12 +4,17 @@
 
 package db
 
+import (
+	"database/sql"
+)
+
 type Problem struct {
-	ID          int64
-	Title       string
-	Description string
-	OwnerID     int64
-	OwnerName   string
+	ID                 int64
+	Title              string
+	Description        string
+	OwnerID            int64
+	OwnerName          string
+	AcceptedSolutionID sql.NullInt64
 }
 
 type Solution struct {
