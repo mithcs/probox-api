@@ -31,11 +31,12 @@ func getProblemByID(ctx context.Context, problemID int64) (GetProblemResponse, *
 	}
 
 	problem := GetProblemResponse{
-		ID:          p.ID,
-		Title:       p.Title,
-		Description: p.Description,
-		OwnerID:     p.OwnerID,
-		OwnerName:   p.OwnerName,
+		ID:                 p.ID,
+		Title:              p.Title,
+		Description:        p.Description,
+		OwnerID:            p.OwnerID,
+		OwnerName:          p.OwnerName,
+		AcceptedSolutionID: p.AcceptedSolutionID.Int64,
 	}
 
 	return problem, nil
@@ -62,11 +63,12 @@ func getAllProblems(ctx context.Context) ([]GetProblemResponse, *globals.HTTPErr
 	var problems []GetProblemResponse
 	for _, problemRow := range problemRows {
 		problems = append(problems, GetProblemResponse{
-			ID:          problemRow.ID,
-			Title:       problemRow.Title,
-			Description: problemRow.Description,
-			OwnerID:     problemRow.OwnerID,
-			OwnerName:   problemRow.OwnerName,
+			ID:                 problemRow.ID,
+			Title:              problemRow.Title,
+			Description:        problemRow.Description,
+			OwnerID:            problemRow.OwnerID,
+			OwnerName:          problemRow.OwnerName,
+			AcceptedSolutionID: problemRow.AcceptedSolutionID.Int64,
 		})
 	}
 

@@ -82,11 +82,12 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	problemRes := CreateProblemResponse{
-		ID:          p.ID,
-		Title:       p.Title,
-		Description: p.Description,
-		OwnerID:     p.OwnerID,
-		OwnerName:   p.OwnerName,
+		ID:                 p.ID,
+		Title:              p.Title,
+		Description:        p.Description,
+		OwnerID:            p.OwnerID,
+		OwnerName:          p.OwnerName,
+		AcceptedSolutionID: p.AcceptedSolutionID.Int64,
 	}
 
 	response, err := globals.EncodeJson(problemRes)

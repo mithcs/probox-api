@@ -8,11 +8,12 @@ import (
 )
 
 type GetProblemResponse struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	OwnerID     int64  `json:"owner_id"`
-	OwnerName   string `json:"owner_name"`
+	ID                 int64  `json:"id"`
+	Title              string `json:"title"`
+	Description        string `json:"description"`
+	OwnerID            int64  `json:"owner_id"`
+	OwnerName          string `json:"owner_name"`
+	AcceptedSolutionID int64  `json:"accepted_solution_id"`
 }
 
 type CreateProblemRequest struct {
@@ -21,11 +22,12 @@ type CreateProblemRequest struct {
 }
 
 type CreateProblemResponse struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	OwnerID     int64  `json:"owner_id"`
-	OwnerName   string `json:"owner_name"`
+	ID                 int64  `json:"id"`
+	Title              string `json:"title"`
+	Description        string `json:"description"`
+	OwnerID            int64  `json:"owner_id"`
+	OwnerName          string `json:"owner_name"`
+	AcceptedSolutionID int64  `json:"accepted_solution_id"`
 }
 
 type ProblemToStore struct {
