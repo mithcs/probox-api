@@ -7,6 +7,10 @@ import (
 	"github.com/mithcs/probox-api/internal/globals"
 )
 
+type AcceptSolutionRequest struct {
+	SolutionID int64 `json:"solution_id"`
+}
+
 type GetProblemResponse struct {
 	ID                 int64  `json:"id"`
 	Title              string `json:"title"`

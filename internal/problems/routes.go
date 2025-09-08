@@ -19,4 +19,14 @@ func SetupProblems(router *chi.Mux) {
 		With(jwtauth.Verifier(globals.AccessTokenAuth)).
 		With(globals.AuthenticatorMiddleware(globals.AccessTokenAuth)).
 		Delete("/problems/{id}", DeleteProblem)
+
+	router.
+		With(jwtauth.Verifier(globals.AccessTokenAuth)).
+		With(globals.AuthenticatorMiddleware(globals.AccessTokenAuth)).
+		Post("/problems/{id}/acceptance", AcceptSolution)
+
+	router.
+		With(jwtauth.Verifier(globals.AccessTokenAuth)).
+		With(globals.AuthenticatorMiddleware(globals.AccessTokenAuth)).
+		Delete("/problems/{id}/acceptance", UnacceptSolution)
 }

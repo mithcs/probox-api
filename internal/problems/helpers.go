@@ -5,9 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"strconv"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 )
@@ -130,27 +128,6 @@ func canDeleteProblem(ctx context.Context, problem GetProblemResponse) *globals.
 	return nil
 }
 
-func compareUserIDWithToken(ctx context.Context, id int64) *globals.HTTPError {
-	uid, err := globals.GetUserIDFromContext(ctx)
-	if err != nil {
-		return &globals.HTTPError{
-			Status: http.StatusBadRequest,
-			Title:  "Invalid User ID.",
-			Err:    errors.New("Could not get user id from request."),
-		}
-	}
-
-	if uid != id {
-		return &globals.HTTPError{
-			Status: http.StatusBadRequest,
-			Title:  "Unauthorized Action.",
-			Err:    errors.New("Not authorized to perform this action to this user."),
-		}
-	}
-
-	return nil
-}
-
 func deleteProblemByID(ctx context.Context, id int64) *globals.HTTPError {
 	err := deleteProblemByIDFromDB(ctx, id)
 	if err != nil {
@@ -164,15 +141,28 @@ func deleteProblemByID(ctx context.Context, id int64) *globals.HTTPError {
 	return nil
 }
 
-func getIDFromRequest(r *http.Request) (int64, *globals.HTTPError) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+func setAcceptedSolutionID(ctx context.Context, pid int64, sid int64) *globals.HTTPError {
+	err := setAcceptedSolutionIDInDB(ctx, pid, sid)
 	if err != nil {
-		return -1, &globals.HTTPError{
-			Status: http.StatusBadRequest,
-			Title:  "Invalid ID.",
-			Err:    errors.New("Could not parse id."),
+		return &globals.HTTPError{
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not set accepted solution id in database."),
 		}
 	}
 
-	return id, nil
+	return nil
+}
+
+func unsetAcceptedSolutionID(ctx context.Context, pid int64) *globals.HTTPError {
+	err := unsetAcceptedSolutionIDInDB(ctx, pid)
+	if err != nil {
+		return &globals.HTTPError{
+			Status: http.StatusInternalServerError,
+			Title:  "Database Error.",
+			Err:    errors.New("Could not set accepted solution id in database."),
+		}
+	}
+
+	return nil
 }

@@ -2,6 +2,7 @@ package problems
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
@@ -40,4 +41,17 @@ func storeProblemInDB(ctx context.Context, problem ProblemToStore) (db.Problem, 
 	})
 
 	return p, err
+}
+
+func setAcceptedSolutionIDInDB(ctx context.Context, pid int64, sid int64) error {
+	solution := sql.NullInt64{Int64: sid, Valid: true}
+
+	return globals.Queries.SetAcceptedSolutionID(ctx, db.SetAcceptedSolutionIDParams{
+		ID:                 pid,
+		AcceptedSolutionID: solution,
+	})
+}
+
+func unsetAcceptedSolutionIDInDB(ctx context.Context, pid int64) error {
+	return globals.Queries.UnsetAcceptedSolutionID(ctx, pid)
 }
