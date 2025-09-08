@@ -6,13 +6,13 @@ import (
 )
 
 type HTTPError struct {
-	Status      int
-	Title       string
-	Description string
+	Status int
+	Title  string
+	Err    error
 }
 
 func (e *HTTPError) Error() string {
-	return e.Description
+	return e.Err.Error()
 }
 
 type _ErrorResponse struct {
@@ -25,7 +25,7 @@ func WriteErrorResponse(w http.ResponseWriter, err *HTTPError) {
 
 	e := _ErrorResponse{
 		Title:       err.Title,
-		Description: err.Description,
+		Description: err.Error(),
 	}
 
 	response, _ := json.Marshal(e)
