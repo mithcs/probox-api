@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createProblem = `-- name: CreateProblem :one
@@ -104,4 +105,29 @@ func (q *Queries) GetProblems(ctx context.Context) ([]Problem, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const setAcceptedSolutionID = `-- name: SetAcceptedSolutionID :exec
+UPDATE problems SET accepted_solution_id = $2
+WHERE id = $1
+`
+
+type SetAcceptedSolutionIDParams struct {
+	ID                 int64
+	AcceptedSolutionID sql.NullInt64
+}
+
+func (q *Queries) SetAcceptedSolutionID(ctx context.Context, arg SetAcceptedSolutionIDParams) error {
+	_, err := q.db.ExecContext(ctx, setAcceptedSolutionID, arg.ID, arg.AcceptedSolutionID)
+	return err
+}
+
+const unsetAcceptedSolutionID = `-- name: UnsetAcceptedSolutionID :exec
+UPDATE problems SET accepted_solution_id = NULL
+WHERE id = $1
+`
+
+func (q *Queries) UnsetAcceptedSolutionID(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, unsetAcceptedSolutionID, id)
+	return err
 }
