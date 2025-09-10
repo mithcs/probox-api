@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/mithcs/probox-api/internal/db"
 	"github.com/mithcs/probox-api/internal/globals"
 )
 
@@ -35,6 +34,7 @@ func getSolutionByID(ctx context.Context, solutionID int64) (GetSolutionResponse
 		Description: p.Description,
 		OwnerID:     p.OwnerID,
 		OwnerName:   p.OwnerName,
+		CreatedAt:   p.CreatedAt.String(),
 	}
 
 	return solution, nil
@@ -67,6 +67,7 @@ func getAllSolutions(ctx context.Context) ([]GetSolutionResponse, *globals.HTTPE
 			Description: solutionRow.Description,
 			OwnerID:     solutionRow.OwnerID,
 			OwnerName:   solutionRow.OwnerName,
+			CreatedAt:   solutionRow.CreatedAt.String(),
 		})
 	}
 
@@ -99,23 +100,34 @@ func getSolutionsByProblemID(ctx context.Context, problemID int64) ([]GetSolutio
 			Description: solutionRow.Description,
 			OwnerID:     solutionRow.OwnerID,
 			OwnerName:   solutionRow.OwnerName,
+			CreatedAt:   solutionRow.CreatedAt.String(),
 		})
 	}
 
 	return solutions, nil
 }
 
-func storeSolution(ctx context.Context, solution SolutionToStore) (db.Solution, *globals.HTTPError) {
+func storeSolution(ctx context.Context, solution SolutionToStore) (CreateSolutionResponse, *globals.HTTPError) {
 	s, err := storeSolutionInDB(ctx, solution)
 	if err != nil {
-		return db.Solution{}, &globals.HTTPError{
+		return CreateSolutionResponse{}, &globals.HTTPError{
 			Status: http.StatusInternalServerError,
 			Title:  "Database Error.",
 			Err:    errors.New("Could not store solution in database."),
 		}
 	}
 
-	return s, nil
+	solutionRes := CreateSolutionResponse{
+		ID:          s.ID,
+		ProblemID:   s.ProblemID,
+		Title:       s.Title,
+		Description: s.Description,
+		OwnerID:     s.OwnerID,
+		OwnerName:   s.OwnerName,
+		CreatedAt:   s.CreatedAt.String(),
+	}
+
+	return solutionRes, nil
 }
 
 func getFullNameByID(ctx context.Context, id int64) (string, *globals.HTTPError) {

@@ -11,9 +11,10 @@ import (
 )
 
 type GetUserResponse struct {
-	ID       int64  `json:"id"`
-	Username string `json:"username"`
-	FullName string `json:"full_name"`
+	ID        int64  `json:"id"`
+	Username  string `json:"username"`
+	FullName  string `json:"full_name"`
+	CreatedAt string `json:"created_at"`
 }
 
 type CreateUserRequest struct {

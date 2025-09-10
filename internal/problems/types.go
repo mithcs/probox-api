@@ -18,6 +18,7 @@ type GetProblemResponse struct {
 	OwnerID            int64  `json:"owner_id"`
 	OwnerName          string `json:"owner_name"`
 	AcceptedSolutionID int64  `json:"accepted_solution_id"`
+	CreatedAt          string `json:"created_at"`
 }
 
 type CreateProblemRequest struct {
@@ -32,6 +33,7 @@ type CreateProblemResponse struct {
 	OwnerID            int64  `json:"owner_id"`
 	OwnerName          string `json:"owner_name"`
 	AcceptedSolutionID int64  `json:"accepted_solution_id"`
+	CreatedAt          string `json:"created_at"`
 }
 
 type ProblemToStore struct {

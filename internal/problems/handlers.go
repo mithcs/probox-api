@@ -81,16 +81,7 @@ func CreateProblem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	problemRes := CreateProblemResponse{
-		ID:                 p.ID,
-		Title:              p.Title,
-		Description:        p.Description,
-		OwnerID:            p.OwnerID,
-		OwnerName:          p.OwnerName,
-		AcceptedSolutionID: p.AcceptedSolutionID.Int64,
-	}
-
-	response, err := globals.EncodeJson(problemRes)
+	response, err := globals.EncodeJson(p)
 	if err != nil {
 		globals.WriteErrorResponse(w, err)
 		return

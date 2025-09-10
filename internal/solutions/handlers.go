@@ -113,16 +113,7 @@ func CreateSolution(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	solutionRes := CreateSolutionResponse{
-		ID:          s.ID,
-		ProblemID:   s.ProblemID,
-		Title:       s.Title,
-		Description: s.Description,
-		OwnerID:     s.OwnerID,
-		OwnerName:   s.OwnerName,
-	}
-
-	response, err := globals.EncodeJson(solutionRes)
+	response, err := globals.EncodeJson(s)
 	if err != nil {
 		globals.WriteErrorResponse(w, err)
 		return

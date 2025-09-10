@@ -15,6 +15,7 @@ type GetSolutionResponse struct {
 	Description string `json:"description"`
 	OwnerID     int64  `json:"owner_id"`
 	OwnerName   string `json:"owner_name"`
+	CreatedAt   string `json:"created_at"`
 }
 
 type CreateSolutionRequest struct {
@@ -30,6 +31,7 @@ type CreateSolutionResponse struct {
 	Description string `json:"description"`
 	OwnerID     int64  `json:"owner_id"`
 	OwnerName   string `json:"owner_name"`
+	CreatedAt   string `json:"created_at"`
 }
 
 type SolutionToStore struct {

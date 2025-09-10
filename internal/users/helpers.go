@@ -34,9 +34,10 @@ func getUserByID(ctx context.Context, id int64) (GetUserResponse, *globals.HTTPE
 	}
 
 	user := GetUserResponse{
-		ID:       userRows.ID,
-		Username: userRows.Username,
-		FullName: userRows.FullName,
+		ID:        userRows.ID,
+		Username:  userRows.Username,
+		FullName:  userRows.FullName,
+		CreatedAt: userRows.CreatedAt.String(),
 	}
 
 	return user, nil
@@ -53,9 +54,10 @@ func getUserByUsername(ctx context.Context, username string) (GetUserResponse, *
 	}
 
 	user := GetUserResponse{
-		ID:       userRows.ID,
-		Username: userRows.Username,
-		FullName: userRows.FullName,
+		ID:        userRows.ID,
+		Username:  userRows.Username,
+		FullName:  userRows.FullName,
+		CreatedAt: userRows.CreatedAt.String(),
 	}
 
 	return user, nil
@@ -82,9 +84,10 @@ func getAllUsers(ctx context.Context) ([]GetUserResponse, *globals.HTTPError) {
 	var users []GetUserResponse
 	for _, userRow := range userRows {
 		users = append(users, GetUserResponse{
-			ID:       userRow.ID,
-			Username: userRow.Username,
-			FullName: userRow.FullName,
+			ID:        userRow.ID,
+			Username:  userRow.Username,
+			FullName:  userRow.FullName,
+			CreatedAt: userRow.CreatedAt.String(),
 		})
 	}
 
