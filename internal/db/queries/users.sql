@@ -7,14 +7,14 @@ INSERT INTO users (
 RETURNING id;
 
 -- name: GetUsers :many
-SELECT id, username, full_name FROM users;
+SELECT id, username, full_name, created_at FROM users;
 
 -- name: GetUserByID :one
-SELECT id, username, full_name FROM users
+SELECT id, username, full_name, created_at FROM users
 WHERE id = $1 LIMIT 1;
 
 -- name: GetUserByUsername :one
-SELECT id, username, full_name FROM users
+SELECT id, username, full_name, created_at FROM users
 WHERE username = $1 LIMIT 1;
 
 -- name: GetCredentialsByUsername :one

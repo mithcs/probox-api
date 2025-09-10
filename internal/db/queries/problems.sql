@@ -7,10 +7,10 @@ INSERT INTO problems (
 RETURNING *;
 
 -- name: GetProblems :many
-SELECT id, title, description, owner_id, owner_name, accepted_solution_id FROM problems;
+SELECT * FROM problems;
 
 -- name: GetProblemByID :one
-SELECT id, title, description, owner_id, owner_name, accepted_solution_id FROM problems
+SELECT * FROM problems
 WHERE id = $1 LIMIT 1;
 
 -- name: DeleteProblemByID :exec

@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -80,49 +81,62 @@ func (q *Queries) GetFullNameByID(ctx context.Context, id int64) (string, error)
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, full_name FROM users
+SELECT id, username, full_name, created_at FROM users
 WHERE id = $1 LIMIT 1
 `
 
 type GetUserByIDRow struct {
-	ID       int64
-	Username string
-	FullName string
+	ID        int64
+	Username  string
+	FullName  string
+	CreatedAt time.Time
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByID, id)
 	var i GetUserByIDRow
-	err := row.Scan(&i.ID, &i.Username, &i.FullName)
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.FullName,
+		&i.CreatedAt,
+	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, full_name FROM users
+SELECT id, username, full_name, created_at FROM users
 WHERE username = $1 LIMIT 1
 `
 
 type GetUserByUsernameRow struct {
-	ID       int64
-	Username string
-	FullName string
+	ID        int64
+	Username  string
+	FullName  string
+	CreatedAt time.Time
 }
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
 	var i GetUserByUsernameRow
-	err := row.Scan(&i.ID, &i.Username, &i.FullName)
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.FullName,
+		&i.CreatedAt,
+	)
 	return i, err
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, username, full_name FROM users
+SELECT id, username, full_name, created_at FROM users
 `
 
 type GetUsersRow struct {
-	ID       int64
-	Username string
-	FullName string
+	ID        int64
+	Username  string
+	FullName  string
+	CreatedAt time.Time
 }
 
 func (q *Queries) GetUsers(ctx context.Context) ([]GetUsersRow, error) {
@@ -134,7 +148,12 @@ func (q *Queries) GetUsers(ctx context.Context) ([]GetUsersRow, error) {
 	var items []GetUsersRow
 	for rows.Next() {
 		var i GetUsersRow
-		if err := rows.Scan(&i.ID, &i.Username, &i.FullName); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.FullName,
+			&i.CreatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -15,7 +15,7 @@ INSERT INTO solutions (
 ) VALUES (
     $1, $2, $3, $4, $5
 )
-RETURNING id, problem_id, title, description, owner_id, owner_name
+RETURNING id, problem_id, title, description, owner_id, owner_name, created_at
 `
 
 type CreateSolutionParams struct {
@@ -42,12 +42,13 @@ func (q *Queries) CreateSolution(ctx context.Context, arg CreateSolutionParams) 
 		&i.Description,
 		&i.OwnerID,
 		&i.OwnerName,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getSolutionByID = `-- name: GetSolutionByID :one
-SELECT id, problem_id, title, description, owner_id, owner_name FROM solutions
+SELECT id, problem_id, title, description, owner_id, owner_name, created_at FROM solutions
 WHERE id = $1 LIMIT 1
 `
 
@@ -61,6 +62,7 @@ func (q *Queries) GetSolutionByID(ctx context.Context, id int64) (Solution, erro
 		&i.Description,
 		&i.OwnerID,
 		&i.OwnerName,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -78,7 +80,7 @@ func (q *Queries) GetSolutionCountByProblemID(ctx context.Context, problemID int
 }
 
 const getSolutions = `-- name: GetSolutions :many
-SELECT id, problem_id, title, description, owner_id, owner_name FROM solutions
+SELECT id, problem_id, title, description, owner_id, owner_name, created_at FROM solutions
 `
 
 func (q *Queries) GetSolutions(ctx context.Context) ([]Solution, error) {
@@ -97,6 +99,7 @@ func (q *Queries) GetSolutions(ctx context.Context) ([]Solution, error) {
 			&i.Description,
 			&i.OwnerID,
 			&i.OwnerName,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -112,7 +115,7 @@ func (q *Queries) GetSolutions(ctx context.Context) ([]Solution, error) {
 }
 
 const getSolutionsByProblemID = `-- name: GetSolutionsByProblemID :many
-SELECT id, problem_id, title, description, owner_id, owner_name FROM solutions
+SELECT id, problem_id, title, description, owner_id, owner_name, created_at FROM solutions
 WHERE problem_id = $1
 `
 
@@ -132,6 +135,7 @@ func (q *Queries) GetSolutionsByProblemID(ctx context.Context, problemID int64) 
 			&i.Description,
 			&i.OwnerID,
 			&i.OwnerName,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}

@@ -7,14 +7,14 @@ INSERT INTO solutions (
 RETURNING *;
 
 -- name: GetSolutions :many
-SELECT id, problem_id, title, description, owner_id, owner_name FROM solutions;
+SELECT * FROM solutions;
 
 -- name: GetSolutionsByProblemID :many
-SELECT id, problem_id, title, description, owner_id, owner_name FROM solutions
+SELECT * FROM solutions
 WHERE problem_id = $1;
 
 -- name: GetSolutionByID :one
-SELECT id, problem_id, title, description, owner_id, owner_name FROM solutions
+SELECT * FROM solutions
 WHERE id = $1 LIMIT 1;
 
 -- name: GetSolutionCountByProblemID :one

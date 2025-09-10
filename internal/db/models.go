@@ -6,6 +6,7 @@ package db
 
 import (
 	"database/sql"
+	"time"
 )
 
 type Problem struct {
@@ -15,6 +16,7 @@ type Problem struct {
 	OwnerID            int64
 	OwnerName          string
 	AcceptedSolutionID sql.NullInt64
+	CreatedAt          time.Time
 }
 
 type Solution struct {
@@ -24,11 +26,13 @@ type Solution struct {
 	Description string
 	OwnerID     int64
 	OwnerName   string
+	CreatedAt   time.Time
 }
 
 type User struct {
-	ID       int64
-	Username string
-	Password string
-	FullName string
+	ID        int64
+	Username  string
+	Password  string
+	FullName  string
+	CreatedAt time.Time
 }

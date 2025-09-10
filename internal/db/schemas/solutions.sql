@@ -5,6 +5,7 @@ CREATE TABLE solutions (
     description  TEXT         NOT NULL,
     owner_id     BIGINT       NOT NULL,
     owner_name   VARCHAR(24)  NOT NULL,
+    created_at   TIMESTAMP    NOT NULL DEFAULT now(),
 
     FOREIGN KEY (problem_id) REFERENCES problems(id),
     FOREIGN KEY (owner_id, owner_name) REFERENCES users(id, full_name)
