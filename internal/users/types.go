@@ -67,8 +67,8 @@ func validateUsername(username string) error {
 	// must start with alphabetic character
 	// may include underscore and/or number
 	// min 3 chars
-	// max 16 chars
-	r := regexp.MustCompile(`^[A-Za-z]\w{1,14}\w$`)
+	// max 24 chars
+	r := regexp.MustCompile(`^[A-Za-z]\w{1,22}\w$`)
 	if !r.MatchString(username) {
 		return errors.New("Invalid Username.")
 	}
