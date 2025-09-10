@@ -34,7 +34,7 @@ func getProblemByID(ctx context.Context, problemID int64) (GetProblemResponse, *
 		OwnerID:            p.OwnerID,
 		OwnerName:          p.OwnerName,
 		AcceptedSolutionID: p.AcceptedSolutionID.Int64,
-		CreatedAt:          p.CreatedAt.String(),
+		CreatedAt:          p.CreatedAt,
 	}
 
 	return problem, nil
@@ -67,7 +67,7 @@ func getAllProblems(ctx context.Context) ([]GetProblemResponse, *globals.HTTPErr
 			OwnerID:            problemRow.OwnerID,
 			OwnerName:          problemRow.OwnerName,
 			AcceptedSolutionID: problemRow.AcceptedSolutionID.Int64,
-			CreatedAt:          problemRow.CreatedAt.String(),
+			CreatedAt:          problemRow.CreatedAt,
 		})
 	}
 
@@ -91,7 +91,7 @@ func storeProblem(ctx context.Context, problem ProblemToStore) (CreateProblemRes
 		OwnerID:            p.OwnerID,
 		OwnerName:          p.OwnerName,
 		AcceptedSolutionID: p.AcceptedSolutionID.Int64,
-		CreatedAt:          p.CreatedAt.String(),
+		CreatedAt:          p.CreatedAt,
 	}
 
 	return prob, nil

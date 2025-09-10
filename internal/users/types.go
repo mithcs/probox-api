@@ -5,16 +5,17 @@ import (
 	"errors"
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/mithcs/probox-api/internal/globals"
 	validator "github.com/wagslane/go-password-validator"
 )
 
 type GetUserResponse struct {
-	ID        int64  `json:"id"`
-	Username  string `json:"username"`
-	FullName  string `json:"full_name"`
-	CreatedAt string `json:"created_at"`
+	ID        int64     `json:"id"`
+	Username  string    `json:"username"`
+	FullName  string    `json:"full_name"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type CreateUserRequest struct {

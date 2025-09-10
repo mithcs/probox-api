@@ -34,7 +34,7 @@ func getSolutionByID(ctx context.Context, solutionID int64) (GetSolutionResponse
 		Description: p.Description,
 		OwnerID:     p.OwnerID,
 		OwnerName:   p.OwnerName,
-		CreatedAt:   p.CreatedAt.String(),
+		CreatedAt:   p.CreatedAt,
 	}
 
 	return solution, nil
@@ -67,7 +67,7 @@ func getAllSolutions(ctx context.Context) ([]GetSolutionResponse, *globals.HTTPE
 			Description: solutionRow.Description,
 			OwnerID:     solutionRow.OwnerID,
 			OwnerName:   solutionRow.OwnerName,
-			CreatedAt:   solutionRow.CreatedAt.String(),
+			CreatedAt:   solutionRow.CreatedAt,
 		})
 	}
 
@@ -100,7 +100,7 @@ func getSolutionsByProblemID(ctx context.Context, problemID int64) ([]GetSolutio
 			Description: solutionRow.Description,
 			OwnerID:     solutionRow.OwnerID,
 			OwnerName:   solutionRow.OwnerName,
-			CreatedAt:   solutionRow.CreatedAt.String(),
+			CreatedAt:   solutionRow.CreatedAt,
 		})
 	}
 
@@ -124,7 +124,7 @@ func storeSolution(ctx context.Context, solution SolutionToStore) (CreateSolutio
 		Description: s.Description,
 		OwnerID:     s.OwnerID,
 		OwnerName:   s.OwnerName,
-		CreatedAt:   s.CreatedAt.String(),
+		CreatedAt:   s.CreatedAt,
 	}
 
 	return solutionRes, nil

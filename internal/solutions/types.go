@@ -4,18 +4,19 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/mithcs/probox-api/internal/globals"
 )
 
 type GetSolutionResponse struct {
-	ID          int64  `json:"id"`
-	ProblemID   int64  `json:"problem_id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	OwnerID     int64  `json:"owner_id"`
-	OwnerName   string `json:"owner_name"`
-	CreatedAt   string `json:"created_at"`
+	ID          int64     `json:"id"`
+	ProblemID   int64     `json:"problem_id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	OwnerID     int64     `json:"owner_id"`
+	OwnerName   string    `json:"owner_name"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type CreateSolutionRequest struct {
@@ -25,13 +26,13 @@ type CreateSolutionRequest struct {
 }
 
 type CreateSolutionResponse struct {
-	ID          int64  `json:"id"`
-	ProblemID   int64  `json:"problem_id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	OwnerID     int64  `json:"owner_id"`
-	OwnerName   string `json:"owner_name"`
-	CreatedAt   string `json:"created_at"`
+	ID          int64     `json:"id"`
+	ProblemID   int64     `json:"problem_id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	OwnerID     int64     `json:"owner_id"`
+	OwnerName   string    `json:"owner_name"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type SolutionToStore struct {
